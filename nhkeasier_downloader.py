@@ -8,9 +8,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 DO_KANJI_ANALYZE = False
 
-nhkdir = '.\\nhk_easy_archive'
+nhkdir = '.\\nhkeasier_archive'
 
 starting_story = 1
+# determine last story automatically
 end_story = 4287
 
 nhkeasy_prefix = "https://nhkeasier.com/story/"
@@ -74,7 +75,8 @@ def download_story(story):
         soup.img.insert_before(soup.audio)
     except AttributeError:
         pass
-
+    # change this
+    # archive/story_xxxx is better
     os.mkdir(nhkdir+story_dir_prefix+str(story))
     with open(nhkdir+story_dir_prefix+str(story)+"\\story.html", 'w', encoding='utf-8') as wr:
         wr.write(soup.prettify())
