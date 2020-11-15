@@ -113,10 +113,10 @@ with open(path+'\\.previous.txt', 'w', encoding='utf-8') as wr:
 
 
 add_data = [{'Date': current_date, 'Time': current_time, 'Words': len(muniq), 'Kanji': len(uniqK)}]
-if os.path.isfile(path+'\\progress.csv'):
-    prog_df = pd.read_csv(path+'\\progress.csv', index_col=0)
+if os.path.isfile(path+'\\.progress.csv'):
+    prog_df = pd.read_csv(path+'\\.progress.csv', index_col=0)
     prog_df = prog_df.append(add_data, ignore_index=True, sort=False)
-    prog_df.to_csv(path+'\\progress.csv', index_label='Index')
+    prog_df.to_csv(path+'\\.progress.csv', index_label='Index')
 else:
     prog_df = pd.DataFrame(add_data)
-    prog_df.to_csv(path+'\\progress.csv', index_label='Index')
+    prog_df.to_csv(path+'\\.progress.csv', index_label='Index')
