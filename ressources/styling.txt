@@ -1,0 +1,46 @@
+body {
+  background-color: #282828;
+  color: #e5e9f0;
+  color: #eceff4;
+  /*color: #d8dee9;*/
+  max-width: 1000px;
+  font-size: 2em;
+  font-weight: 400;
+  line-height: 150%;
+  margin-top: 1%;
+  margin-left: 1.5%;
+  margin-right: 10%;
+  margin-bottom: 20%;
+  font-family: "Noto Sans JP";
+  }
+pre {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+a {
+  color: #b48ead;
+}
+.knownword {
+  color: #81a1c1;
+  /*border-right: 2px dotted #81a1c1;*/
+}
+.knownkanji {
+  /*text-decoration: underline #a3be8c;*/
+  border-bottom: 5px solid #a3be8c;
+}
+.knownkanjiword {
+  /*text-decoration: underline #a3be8c;*/
+ color: #88C0D0;
+}
+.lemmaword {
+  /*text-decoration: underline #a3be8c;*/
+ color: #8FBCBB;
+ color: #a3be8c;
+}
+.unknownkanji {
+  /*text-decoration: underline #bf616a;*/
+  border-bottom: 5px solid #bf616a;
+}
