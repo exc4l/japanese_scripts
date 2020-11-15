@@ -11,8 +11,12 @@ DO_KANJI_ANALYZE = False
 nhkdir = '.\\nhkeasier_archive'
 
 starting_story = 1
-# determine last story automatically
-end_story = 4287
+# determine latest story automatically
+#end_story = 4287
+response = requests.get('https://nhkeasier.com/')
+soup = BeautifulSoup(response.text, 'lxml')
+latest = soup.find('a', {'class': 'permalink'})
+end_story = latest.get('href')[-5:-1]
 
 nhkeasy_prefix = "https://nhkeasier.com/story/"
 story_dir_prefix = '\\Story_'
