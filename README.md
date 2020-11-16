@@ -22,7 +22,7 @@ Jap Grammar:1
 
 In Anki my notetype Audio Cards looks like this:
 
-<img src="https://github.com/exc4l/japanese_scripts/raw/main/anki_notetype.png" width=125 height=125 />
+<img src="https://github.com/exc4l/japanese_scripts/raw/main/anki_notetype.png" />
 
 
 ## Requirements
