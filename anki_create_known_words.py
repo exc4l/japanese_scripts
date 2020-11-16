@@ -19,7 +19,7 @@ write_to_file_text = ''
 col = Collection(user='User 1')
 notes = col.cards.merge_notes()
 
-path = __loc__+'\\ressources'
+path = __loc__+'\\resources'
 kw_path = path +'\\.known_words.txt'
 
 

@@ -32,7 +32,7 @@ DO_HTML = True
 DO_KANJI = True
 
 __loc__ = os.path.abspath('')
-path = __loc__+'\\ressources'
+path = __loc__+'\\resources'
 kw_path = path +'\\.known_words.txt'
 
 # convert epubs to mobi
