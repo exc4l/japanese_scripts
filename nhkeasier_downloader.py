@@ -5,6 +5,7 @@ import fugashi
 import kanjianalyze as kana
 import os
 from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 DO_KANJI_ANALYZE = False
 
@@ -16,10 +17,13 @@ starting_story = 1
 response = requests.get('https://nhkeasier.com/')
 soup = BeautifulSoup(response.text, 'lxml')
 latest = soup.find('a', {'class': 'permalink'})
-end_story = latest.get('href')[-5:-1]
+end_story = int(latest.get('href')[-5:-1])
 
 nhkeasy_prefix = "https://nhkeasier.com/story/"
 story_dir_prefix = '\\Story_'
+
+__loc__ = os.path.abspath('')
+path = __loc__+'\\resources'
 
 whitelist = ['a', 'img', 'meta', 'audio']
 blacklist=['div','script','li','nav','ul','time','rt','label','meta','td']
@@ -72,7 +76,7 @@ def download_story(story):
     teststr=teststr.replace('<link/>','')
 
     soup = BeautifulSoup(teststr, 'lxml')
-    with open("styling.txt", 'r', encoding="utf-8") as file:
+    with open(path+"\\styling.txt", 'r', encoding="utf-8") as file:
         styletag = file.read()
     soup = hpre.add_style(soup, styletag)
     try:
@@ -128,18 +132,23 @@ def download_story(story):
 
 # print(stories_to_load)
 def main():
-    with ThreadPoolExecutor() as executor:
-        for story in stories_to_load:
-            futures = executor.submit(download_story, story)
-            futures_list.append(futures)
-        for future in futures_list:
-            try:
-                result = future.result(timeout=300)
-                results.append(result)
-            except Exception:
-                print("timeout error")
-                future.cancel()
-                print("process was sucessfully canceled {future.cancelled()}")
-                results.append(None)
+    ### unable to get a pool that is faster than the simple for loop
+    ### probably due to the weird processing i'm doing in the download story function
+    ### might be faster if i first load all the stories and then process
+    # with ThreadPoolExecutor() as executor:
+    #     for story in tqdm(stories_to_load):
+    #         futures = executor.submit(download_story, story)
+    #         futures_list.append(futures)
+    #     for future in tqdm(futures_list):
+    #         try:
+    #             result = future.result(timeout=300)
+    #             results.append(result)
+    #         except Exception:
+    #             print("timeout error")
+    #             future.cancel()
+    #             print("process was sucessfully canceled {future.cancelled()}")
+    #             results.append(None)
+    for story in tqdm(stories_to_load):
+        download_story(story)
 if __name__ == '__main__':
     main()

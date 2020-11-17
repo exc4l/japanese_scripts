@@ -11,6 +11,7 @@ current_date = now.strftime("%d/%m/%Y")
 
 
 __loc__ = os.path.abspath('')
+__loc__ = os.path.dirname(os.path.realpath(__file__))
 DISREGARD_OLD_KNOWN = False
 ADD_NX_SUP = False
 

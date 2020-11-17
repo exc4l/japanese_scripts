@@ -1,6 +1,5 @@
 import os
 import mobi
-import glob
 import shutil
 import re
 import fugashi
@@ -14,22 +13,19 @@ import html_prep as hpre
 import mobiextract as moex
 
 # settings
-bookdir = ".\\lNs"
+bookdir = r'LNs/'
 
 max_img_height = 1100
-
-known_words_path = "known_words.txt"
 
 whitelist = ['a', 'img', 'meta']
 
 # flags
-CONVERT_EPUB = False
 
 EXTRACT_MOBI = True
 
 DO_HTML = True
 
-DO_KANJI = True
+DO_KANJI = False
 
 __loc__ = os.path.abspath('')
 path = __loc__+'\\resources'
@@ -49,10 +45,10 @@ kw_path = path +'\\.known_words.txt'
 # extract the mobis
 def extract_mobi():
     booklist = moex.extract_mobi_folder(bookdir)
-    print(booklist)
-    for bo in booklist:
-        print(bo + "\\book.html")
-        print(bo + "\\" + os.path.basename(bo) + ".html")
+    print('\n'.join(booklist))
+    # for bo in booklist:
+    #     print(bo + "\\book.html")
+    #     print(bo + "\\" + os.path.basename(bo) + ".html")
     return booklist
 
 # clean the htmls and apply styling
