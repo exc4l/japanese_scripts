@@ -40,6 +40,8 @@ notkanatrans= str.maketrans('','',notkana)
 allchars = hiragana+katakana + \
     "".join(specialchars)+alphastring+numbers+alphawide
 
+allcharset = set(allchars)
+
 alltrans = str.maketrans("", "", allchars)
 
 
@@ -52,7 +54,7 @@ def is_single_kana(word):
     return False
 
 def is_in_allchars(word):
-    if word in allchars:
+    if word in allcharset:
         return True
     return False
 

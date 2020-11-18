@@ -29,6 +29,7 @@ else:
     val=val.split(',')
     val = [int(v) for v in val]
 print(val)
+print('This will take some time')
 
 selected_list = []
 for v in val:
@@ -56,7 +57,8 @@ testcorpus = testcorpus.replace('\n\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n','\n')
 
-#this takes long depending on the corpus size
+# tagging the whole corpus takes a long time depending on the corpus
+# the list comps are also slow
 token_words = [[word.surface, word.feature.lemma] for word in tagger(testcorpus)]
 token_flat = [y for x in token_words for y in x]
 token_flat = [word for word in token_flat if word]
@@ -84,7 +86,10 @@ for tok in token_counter.most_common():
 with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
     wr.write('['+freqstr[:-1]+']')
 
+# without the second argument the zipfile contains the dic structure
 zipObj = ZipFile(f'{yomidir}{title}.zip', 'w')
-zipObj.write(yomitemp+'index.json')
-zipObj.write(yomitemp+'term_meta_bank_1.json')
+zipObj.write(yomitemp+'index.json','index.json')
+zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
 zipObj.close()
+
+print('successfully created the dictionary in yomidics/')
