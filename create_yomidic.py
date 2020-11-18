@@ -7,6 +7,8 @@ tagger = fugashi.Tagger()
 from collections import Counter
 from zipfile import ZipFile
 
+Sort_by_Word_Rank = False
+
 lndir = r'LNs/'
 
 yomidir = r'yomidics/'
@@ -56,7 +58,8 @@ testcorpus = testcorpus.replace('\n\n\n\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n','\n')
-
+del corpus
+del raw_corpus
 # tagging the whole corpus takes a long time depending on the corpus
 # the list comps are also slow
 token_words = [[word.surface, word.feature.lemma] for word in tagger(testcorpus)]
@@ -64,10 +67,13 @@ token_flat = [y for x in token_words for y in x]
 token_flat = [word for word in token_flat if word]
 token_flat = [word for word in token_flat if not kana.is_in_allchars(word)]
 token_flat = [kana.clean_lemma(word) for word in token_flat]
+del token_words
+
 
 token_counter = Counter(token_flat)
 
 title = input("Enter the name that gets displayed in Yomichan: ")
+
 
 yomi_title = '{"title":"' + title + '","format":3,"revision":"frequency1"}'
 
@@ -80,11 +86,17 @@ with open(yomitemp+'index.json','w',encoding='utf-8') as wr:
 
 freqstr=''
 idx=1
-for tok in token_counter.most_common():
-    freqstr+=f'[\"{tok[0]}\","freq",{idx}],'
-    idx+=1
-with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
-    wr.write('['+freqstr[:-1]+']')
+if Sort_by_Word_Rank:
+    for tok in token_counter.most_common():
+        freqstr+=f'[\"{tok[0]}\","freq",{idx}],'
+        idx+=1
+    with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
+        wr.write('['+freqstr[:-1]+']')
+else:
+    for tok in token_counter.most_common():
+        freqstr+=f'[\"{tok[0]}\","freq",{tok[1]}],'
+    with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
+        wr.write('['+freqstr[:-1]+']')
 
 # without the second argument the zipfile contains the dic structure
 zipObj = ZipFile(f'{yomidir}{title}.zip', 'w')
