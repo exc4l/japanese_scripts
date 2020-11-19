@@ -22,7 +22,7 @@ specialchars = ['\u3000', '、', '。', '《', '》', '！', '「', '」', '[', 
                 '○', '×', '<', '>', '』', '.', '△', '？', '!', '☆', '・', '〇', '『', '…', '｜', '～', '【', '―',
                 "…", '">', '="', ' ', '="/.">','⑰','㎝','㎜','◯','‥','♥',
                 '*', ';', ':', '{', '}', '#', '%', '●', '■', '─', '〝', '〟', '〟', '：', '\)', '\(', ',', '／',
-                '］','［','|','_','％','＜','＞',
+                '］','［','|','_','％','＜','＞','ω',
                 '．','℃','−','\xa0','\r','※','→','＆','〈','〉','＝','｟','－','©','＊','③','②','①','④','＋','†',
                 '□','｝','〜','，','★','｠','‥','〕','㎝','◇','⑰','♫','㎜','▽','←','＃','‐','Ⅲ',
                 '〔','♥','◆','α','γ','÷','㎞','±','Ⅰ','♪','◯']
@@ -93,6 +93,16 @@ def markup_book_html(bookstr):
     for i in notkana:
         if i not in sentencemarker:
             bookstr = bookstr.replace(i, '')
+    return bookstr
+
+#figured translate might be faster
+def markup_book_html_test(bookstr):
+    notkana_small = set(notkana)
+    notkana_small.difference_update(set(sentencemarker))
+    notkana_small = ''.join(notkana_small)
+
+    notkana_smalltrans= str.maketrans('','',notkana_small)
+    bookstr=bookstr.translate(notkana_smalltrans)
     return bookstr
 
 
