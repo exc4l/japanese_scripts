@@ -104,7 +104,14 @@ def markup_book_html_test(bookstr):
     notkana_smalltrans= str.maketrans('','',notkana_small)
     bookstr=bookstr.translate(notkana_smalltrans)
     return bookstr
-
+    
+def reduce_new_lines(bookstr):
+    bookstr = bookstr.replace('\n\n\n\n\n\n\n\n','\n')
+    bookstr = bookstr.replace('\n\n\n\n\n\n','\n')
+    bookstr = bookstr.replace('\n\n\n\n','\n')
+    bookstr = bookstr.replace('\n\n\n','\n')
+    bookstr = bookstr.replace('\n\n','\n')
+    return bookstr
 
 def get_unique_kanji(words):
     wordlist = ''.join(words)
