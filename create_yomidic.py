@@ -7,7 +7,7 @@ tagger = fugashi.Tagger()
 from collections import Counter
 from zipfile import ZipFile
 
-Sort_by_Word_Rank = False
+Sort_by_Word_Rank = True
 
 lndir = r'LNs/'
 
@@ -46,7 +46,7 @@ corpus = ''
 for book in filelist:
     with open(book,'r', encoding='utf-8') as file:
         data = file.read()
-    raw_corpus+= data
+    # raw_corpus+= data
     cleaned_data = kana.markup_book_html(data)
     corpus += cleaned_data
 
@@ -59,16 +59,14 @@ testcorpus = testcorpus.replace('\n\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n\n','\n')
 testcorpus = testcorpus.replace('\n\n','\n')
 del corpus
-del raw_corpus
+
 # tagging the whole corpus takes a long time depending on the corpus
 # the list comps are also slow
-token_words = [[word.surface, word.feature.lemma] for word in tagger(testcorpus)]
-token_flat = [y for x in token_words for y in x]
-token_flat = [word for word in token_flat if word]
+#token_words = [[word.surface, word.feature.lemma] for word in tagger(testcorpus)]
+token_flat = [feat for word in tagger(testcorpus) for feat in [word.surface, word.feature.lemma] if feat]
+#token_flat = [word for word in token_flat if word]
 token_flat = [word for word in token_flat if not kana.is_in_allchars(word)]
 token_flat = [kana.clean_lemma(word) for word in token_flat]
-del token_words
-
 
 token_counter = Counter(token_flat)
 
@@ -105,3 +103,7 @@ zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
 zipObj.close()
 
 print('successfully created the dictionary in yomidics/')
+
+with open(f'{yomidir}{title}_freq.txt', 'w', encoding='utf-8') as wr:
+    for w,f in token_counter.most_common():
+            wr.write(f"{w}, {f}\n")
