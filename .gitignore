@@ -3,6 +3,7 @@ notebooks/
 *.ipynb
 .*.csv
 .*.txt
+nhkeasier_archive/*/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
