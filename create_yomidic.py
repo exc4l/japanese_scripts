@@ -50,7 +50,7 @@ corpus = ''
 for book in filelist:
     with open(book,'r', encoding='utf-8') as file:
         data = file.read()
-    cleaned_data = kana.markup_book_html(data)
+    cleaned_data = kana.markup_book_html_rem_furigana(data)
     corpus += cleaned_data
 
 uniq_kanji = kana.get_unique_kanji(corpus)
@@ -71,8 +71,7 @@ token_counter = Counter(token_flat)
 
 title = input("Enter the name that gets displayed in Yomichan: ")
 
-yomi_title_w = '{"title":"' + title + '_W","format":3,"revision":"frequency1"}'
-yomi_title_f = '{"title":"' + title + '_F","format":3,"revision":"frequency1"}'
+yomi_title = '{"title":"' + title + '_W","format":3,"revision":"frequency1"}'
 
 if not os.path.isdir(yomidir):
     os.mkdir(yomidir)
@@ -81,37 +80,23 @@ if not os.path.isdir(yomitemp):
 
 
 with open(yomitemp+'index.json','w',encoding='utf-8') as wr:
-    wr.write(yomi_title_w)
+    wr.write(yomi_title)
 
 freqstr=''
 idx=1
 for tok in token_counter.most_common():
-    freqstr+=f'[\"{tok[0]}\","freq",{idx}],'
+    freqstr+=f'[\"{tok[0]}\","freq"," {idx} F: {tok[1]}"],'
     idx+=1
 with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
     wr.write('['+freqstr[:-1]+']')
 
 # without the second argument the zipfile contains the dic structure
-zipObj = ZipFile(f'{yomidir}{title}_W.zip', 'w')
+zipObj = ZipFile(f'{yomidir}{title}.zip', 'w')
 zipObj.write(yomitemp+'index.json','index.json')
 zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
 zipObj.close()
 
 
-
-with open(yomitemp+'index.json','w',encoding='utf-8') as wr:
-    wr.write(yomi_title_f)
-freqstr=''
-for tok in token_counter.most_common():
-    freqstr+=f'[\"{tok[0]}\","freq",{tok[1]}],'
-with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
-    wr.write('['+freqstr[:-1]+']')
-
-# without the second argument the zipfile contains the dic structure
-zipObj = ZipFile(f'{yomidir}{title}_F.zip', 'w')
-zipObj.write(yomitemp+'index.json','index.json')
-zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
-zipObj.close()
 
 
 print('\nSuccessfully created the dictionaries in yomidics/\n')
@@ -131,14 +116,14 @@ print(f'Threshold for 20 Occurences is position {len(token_counter)-b20}')
 print(f'Threshold for 10 Occurences is position {len(token_counter)-b}')
 print(f'Threshold for 5 Occurences is position {len(token_counter)-b5}')
 
-print(f'There\'s {b} terms which appear less than {thresh} times.')
+print(f'There\'s {b} terms which appear {thresh-1} times or less.')
 perc =100* a/(len(token_flat))
 print(f'Together they appear {a} times making up {perc:.3f}% of the corpus.')
 wordcount = 100/perc
 print(f'For every {int(wordcount)} terms there is one of them.')
 avg_novel = len(token_flat)/len(filelist)
 print(f'On average this results in {int(avg_novel/wordcount)} occurrences per novel.')
-print('Hint: Due to how the program currently counts: This is a very rough overestimate.')
+print('Hint: Due to how the program currently counts; This is a very rough overestimate.')
 # compare the obtained corpus to the known words and create
 # a frequency txt containing just the unknowns
 if os.path.isfile(kw_path):
