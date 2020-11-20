@@ -35,7 +35,7 @@ else:
     val=val.split(',')
     val = [int(v) for v in val]
 print(val)
-print('This will take some time')
+print('This will take some time...')
 
 selected_list = []
 for v in val:
@@ -50,7 +50,6 @@ corpus = ''
 for book in filelist:
     with open(book,'r', encoding='utf-8') as file:
         data = file.read()
-    # raw_corpus+= data
     cleaned_data = kana.markup_book_html(data)
     corpus += cleaned_data
 
@@ -72,42 +71,50 @@ token_counter = Counter(token_flat)
 
 title = input("Enter the name that gets displayed in Yomichan: ")
 
-Sort_by_Word_Rank = input("Enter 'Word' for word ranking sorting and 'Freq' for freuqency sorting : ")
-if Sort_by_Word_Rank[0] == 'W' or Sort_by_Word_Rank[0] == 'w':
-    Sort_by_Word_Rank = True
-else:
-    Sort_by_Word_Rank = False
-
-yomi_title = '{"title":"' + title + '","format":3,"revision":"frequency1"}'
+yomi_title_w = '{"title":"' + title + '_W","format":3,"revision":"frequency1"}'
+yomi_title_f = '{"title":"' + title + '_F","format":3,"revision":"frequency1"}'
 
 if not os.path.isdir(yomidir):
     os.mkdir(yomidir)
 if not os.path.isdir(yomitemp):
     os.mkdir(yomitemp)
+
+
 with open(yomitemp+'index.json','w',encoding='utf-8') as wr:
-    wr.write(yomi_title)
+    wr.write(yomi_title_w)
 
 freqstr=''
 idx=1
-if Sort_by_Word_Rank:
-    for tok in token_counter.most_common():
-        freqstr+=f'[\"{tok[0]}\","freq",{idx}],'
-        idx+=1
-    with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
-        wr.write('['+freqstr[:-1]+']')
-else:
-    for tok in token_counter.most_common():
-        freqstr+=f'[\"{tok[0]}\","freq",{tok[1]}],'
-    with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
-        wr.write('['+freqstr[:-1]+']')
+for tok in token_counter.most_common():
+    freqstr+=f'[\"{tok[0]}\","freq",{idx}],'
+    idx+=1
+with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
+    wr.write('['+freqstr[:-1]+']')
 
 # without the second argument the zipfile contains the dic structure
-zipObj = ZipFile(f'{yomidir}{title}.zip', 'w')
+zipObj = ZipFile(f'{yomidir}{title}_W.zip', 'w')
 zipObj.write(yomitemp+'index.json','index.json')
 zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
 zipObj.close()
 
-print('\nsuccessfully created the dictionary in yomidics/\n')
+
+
+with open(yomitemp+'index.json','w',encoding='utf-8') as wr:
+    wr.write(yomi_title_f)
+freqstr=''
+for tok in token_counter.most_common():
+    freqstr+=f'[\"{tok[0]}\","freq",{tok[1]}],'
+with open(yomitemp+'term_meta_bank_1.json','w',encoding='utf-8') as wr:
+    wr.write('['+freqstr[:-1]+']')
+
+# without the second argument the zipfile contains the dic structure
+zipObj = ZipFile(f'{yomidir}{title}_F.zip', 'w')
+zipObj.write(yomitemp+'index.json','index.json')
+zipObj.write(yomitemp+'term_meta_bank_1.json','term_meta_bank_1.json')
+zipObj.close()
+
+
+print('\nSuccessfully created the dictionaries in yomidics/\n')
 
 with open(f'{yomidir}{title}_freq.txt', 'w', encoding='utf-8') as wr:
     for w,f in token_counter.most_common():
@@ -119,10 +126,10 @@ b= sum(k<thresh for k in token_counter.values())
 a= sum(k for k in token_counter.values() if k < thresh)
 b20  = sum(k<21 for k in token_counter.values())
 b5 = sum(k<6 for k in token_counter.values())
-if Sort_by_Word_Rank:
-    print(f'Threshold for 20 Occurences is position {len(token_counter)-b20}')
-    print(f'Threshold for 10 Occurences is position {len(token_counter)-b}')
-    print(f'Threshold for 5 Occurences is position {len(token_counter)-b5}')
+
+print(f'Threshold for 20 Occurences is position {len(token_counter)-b20}')
+print(f'Threshold for 10 Occurences is position {len(token_counter)-b}')
+print(f'Threshold for 5 Occurences is position {len(token_counter)-b5}')
 
 print(f'There\'s {b} terms which appear less than {thresh} times.')
 perc =100* a/(len(token_flat))
