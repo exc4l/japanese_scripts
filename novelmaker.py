@@ -59,6 +59,7 @@ def do_html(booklist):
     for bo in booklist:
         with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
             booktml = file.read()
+        booktml = kana.remove_furigana_font(booktml)
         soup = BeautifulSoup(booktml, 'lxml')
         soup = hpre.strip_tags_and_font(soup, whitelist)
         soup = hpre.add_style(soup, styletag)

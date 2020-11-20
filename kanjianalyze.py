@@ -27,7 +27,7 @@ specialchars = ['\u3000', '、', '。', '《', '》', '！', '「', '」', '[', 
                 '□','｝','〜','，','★','｠','‥','〕','㎝','◇','⑰','♫','㎜','▽','←','＃','‐','Ⅲ',
                 '〔','♥','◆','α','γ','÷','㎞','±','Ⅰ','♪','◯']
 
-sentencemarker = ['。', '、', '!', '！', '？', '」', '「', '』', '『']
+sentencemarker = ['。', '、', '!', '！', '？', '」', '「', '』', '『','（','）']
 
 numbers = "0123456789０１２３４５６７８９"
 
@@ -90,6 +90,17 @@ def markup_known_words(known_w):
 
 
 def markup_book_html(bookstr):
+    for i in notkana:
+        if i not in sentencemarker:
+            bookstr = bookstr.replace(i, '')
+    return bookstr
+def remove_furigana_font(bookstr):
+    bookstr = re.sub('\<font size="1">(.*?)\<\/font>','',bookstr)
+    return bookstr
+
+## test with removing furigana first
+def markup_book_html_rem_furigana(bookstr):
+    bookstr = remove_furigana_font(bookstr)
     for i in notkana:
         if i not in sentencemarker:
             bookstr = bookstr.replace(i, '')
