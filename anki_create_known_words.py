@@ -1,6 +1,7 @@
 import fugashi
 tagger = fugashi.Tagger()
 import kanjianalyze as kana
+import create_kanjigrid as kj
 from ankipandas import Collection
 import os
 import pandas as pd
@@ -14,6 +15,7 @@ __loc__ = os.path.abspath('')
 __loc__ = os.path.dirname(os.path.realpath(__file__))
 DISREGARD_OLD_KNOWN = False
 ADD_NX_SUP = False
+CREATE_KANJIGRID = True
 
 write_to_file_text = ''
 
@@ -121,3 +123,6 @@ if os.path.isfile(path+'\\.progress.csv'):
 else:
     prog_df = pd.DataFrame(add_data)
     prog_df.to_csv(path+'\\.progress.csv', index_label='Index')
+
+if CREATE_KANJIGRID:
+    kj.main()

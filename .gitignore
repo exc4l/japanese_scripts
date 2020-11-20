@@ -4,6 +4,7 @@ notebooks/
 .*.csv
 .*.txt
 nhkeasier_archive/*/
+Kanjigrid*.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
