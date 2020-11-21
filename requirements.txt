@@ -1,8 +1,13 @@
-Pillow == 7.2.0
+# notes for pillow
+# on windows pillow sometimes lacks some modules namely '_imagingft C'
+# if that happens please download pillow from https://www.lfd.uci.edu/~gohlke/pythonlibs/#pillow
+# and install the wheel.
+Pillow == 8.0.1
 ankipandas == 0.3.6
-beautifulsoup4 == 4.9.1
+beautifulsoup4 == 4.9.3
 #fugashi == 1.0.4
 mobi == 0.3.1
-pandas == 1.0.5
+pandas == 1.1.3
 requests == 2.24.0
-tqdm == 4.47.0
+tqdm == 4.51.0
+#wikipedia == 1.4.0
