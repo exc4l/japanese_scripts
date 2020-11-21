@@ -126,7 +126,7 @@ def main():
         headerfont = ImageFont.truetype('cambria.ttc', size=HEADERFONTSIZE)
     except:
         print("Unlucky")
-
+    print('Used Font: '+fontjp.font.family)
     with open(kw_path, 'r', encoding="utf-8") as file:
         known_words = file.read()
     kanjistring = kana.remove_non_kanji(known_words)
