@@ -16,6 +16,7 @@ __loc__ = os.path.dirname(os.path.realpath(__file__))
 DISREGARD_OLD_KNOWN = False
 ADD_NX_SUP = False
 CREATE_KANJIGRID = True
+COUNT_NEW_LEECHES = True
 
 write_to_file_text = ''
 
@@ -43,12 +44,12 @@ for cards in card_list:
     card, field = cards.split(':')
     field = int(field)
     selection = notes.query(f"nmodel == '{card}' and cqueue == 'due' or nmodel == '{card}' and cqueue == 'suspended'")
-    # selstr = (f"nmodel == '{card}' and cqueue == 'due' or "
-    #     f"nmodel == '{card}' and cqueue == 'suspended' or "
-    #     f"nmodel == '{card}' and tag == 'leech'")
-    # selection = notes.query(selstr)
-    # selection = notes.query(f"nmodel == '{card}' and cqueue == 'due'")
     sellist = selection['nflds'].tolist()
+    if COUNT_NEW_LEECHES:
+        mask = notes.ntags.apply(lambda x: 'leech' in x)
+        leech_sel = notes[mask]
+        sel = leech_sel.query(f"nmodel == '{card}' and cqueue == 'new'")
+        sellist.extend(sel['nflds'].tolist())
     print(f'card model {card} found:')
     write_to_file_text= write_to_file_text + f'card model {card} found:' + '\n'
     print(len(sellist))
