@@ -6,7 +6,7 @@ import subprocess
 epubdir = r'LNs/'
 
 def convert(ep):
-    command = ['ebook-convert.exe', ep, os.path.splitext(ep)[0]+'.mobi']
+    command = ['ebook-convert.exe', ep, os.path.splitext(ep)[0]+'.mobi', '--extra-css','ruby rt { visibility: hidden; }']
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     return f'{ep} converted'
 

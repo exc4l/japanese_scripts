@@ -25,7 +25,7 @@ EXTRACT_MOBI = True
 
 DO_HTML = True
 
-DO_KANJI = False
+DO_KANJI = True
 
 __loc__ = os.path.abspath('')
 path = __loc__+'\\resources'
