@@ -1,5 +1,3 @@
-import fugashi
-tagger = fugashi.Tagger()
 import kanjianalyze as kana
 import create_kanjigrid as kj
 from ankipandas import Collection
