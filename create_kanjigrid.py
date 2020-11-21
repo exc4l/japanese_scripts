@@ -122,12 +122,10 @@ def main():
     #         fontjp = ImageFont.truetype('msmincho.ttc', size=KANJISIZE)
         except:
             print("Unlucky")
-            sys.exit("No font")
     try:
         headerfont = ImageFont.truetype('cambria.ttc', size=HEADERFONTSIZE)
     except:
         print("Unlucky")
-        sys.exit("No font")
 
     with open(kw_path, 'r', encoding="utf-8") as file:
         known_words = file.read()
