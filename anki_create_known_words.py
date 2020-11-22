@@ -8,6 +8,13 @@ now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 current_date = now.strftime("%d/%m/%Y")
 
+try:
+    import fugashi
+    tagger = fugashi.Tagger()
+    EXTRA = True
+except ModuleNotFoundError:
+    EXTRA = False
+
 
 __loc__ = os.path.abspath('')
 __loc__ = os.path.dirname(os.path.realpath(__file__))
@@ -59,14 +66,15 @@ for cards in card_list:
 uniq_w = list(set(words))
 
 extra = []
-for w in uniq_w:
-    tags = tagger(w)
-    if len(tags) > 1:
-        for t in tags:
-            tl = t.feature.lemma
-            if tl not in uniq_w and not kana.is_single_kana(tl):
-#                 print(tl)
-                extra.append(tl)
+if EXTRA:
+    for w in uniq_w:
+        tags = tagger(w)
+        if len(tags) > 1:
+            for t in tags:
+                tl = t.feature.lemma
+                if tl not in uniq_w and not kana.is_single_kana(tl):
+    #                 print(tl)
+                    extra.append(tl)
 
 extra = list(set(extra))
 uniq_w.extend(extra)
