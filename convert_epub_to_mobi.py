@@ -1,23 +1,36 @@
 import concurrent.futures
 import os
 import subprocess
+import click
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
 
-
-epubdir = r'LNs/'
 
 def convert(ep):
     command = ['ebook-convert.exe', ep, os.path.splitext(ep)[0]+'.mobi', '--extra-css','ruby rt { visibility: hidden; }']
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     return f'{ep} converted'
-
-def main(epubdir):
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option('--bookdir', '-i',
+              type=click.Path(exists=True),
+              default='LNs/',
+              help='the dictionary which contains the books'
+              )
+@click.option('--threads', '-t',
+            type=click.INT,
+            default=os.cpu_count()-4,
+            help='number of threads used for conversion')
+def main(bookdir,threads):
+    '''
+    Converts ebooks to mobi using calibre's ebook-convert.exe\n
+    Utilizes several threads
+    '''
     results=[]
     futures_list=[]
     epubdir = epubdir
     epubs = [ f.path for f in os.scandir(epubdir) 
             if f.is_file() and os.path.splitext(f)[1] == '.epub' and not os.path.isfile(os.path.splitext(f)[0]+'.mobi')]
     print('\n'.join(epubs))
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_epub = {executor.submit(convert, ep): ep for ep in epubs}
         for future in concurrent.futures.as_completed(future_epub):
             book = future_epub[future]
@@ -29,4 +42,4 @@ def main(epubdir):
                 print(f'\nsuccessfully converted {book}\n')
 
 if __name__ == '__main__':
-    main(epubdir)
+    main()
