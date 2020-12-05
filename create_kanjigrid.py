@@ -173,7 +173,7 @@ def main():
 
     now = datetime.now()
     current_time = now.strftime("_%H_%M")
-    current_date = now.strftime("%d_%m_%Y")
+    current_date = now.strftime("%Y_%m_%d")
     tempimg.save(path+f'/Kanjigrid_{current_date}{current_time}.png')
 
     val = input('Print unknown kanji?[yes]: ')
