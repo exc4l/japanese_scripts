@@ -4,6 +4,7 @@ import shutil
 import re
 import fugashi
 import subprocess
+from glob import glob
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -11,39 +12,18 @@ from bs4 import BeautifulSoup
 import kanjianalyze as kana
 import html_prep as hpre
 import mobiextract as moex
+import click
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
 
 # settings
-bookdir = r'LNs/'
 
-max_img_height = 1100
-
-whitelist = ['a', 'img', 'meta']
-
-# flags
-
-EXTRACT_MOBI = True
-
-DO_HTML = True
-
-DO_KANJI = True
 
 __loc__ = os.path.abspath('')
-path = __loc__+'\\resources'
-kw_path = path +'\\.known_words.txt'
+path = __loc__ + '\\resources'
+kw_path = path + '\\.known_words.txt'
 
-# convert epubs to mobi
-# if CONVERT_EPUB:
-#     epublist = glob.glob(bookdir+"/*.epub")
-#     os.makedirs(os.path.dirname(dest_fpath), exist_ok=True)
-#     epubbar = tqdm(epublist)
-#     for eb in epubbar:
-#         epubbar.set_description(f"Converting {eb} to mobi")
-#         command = ['ebook-convert.exe', eb, os.path.splitext(eb)[0]+'.mobi']
-#         result = subprocess.run(command, stdout=subprocess.PIPE)
-#         shutil.move(eb, bookdir+'\\epubs\\')
 
-# extract the mobis
-def extract_mobi():
+def mobi_processing(bookdir):
     booklist = moex.extract_mobi_folder(bookdir)
     print('\n'.join(booklist))
     # for bo in booklist:
@@ -52,8 +32,11 @@ def extract_mobi():
     return booklist
 
 # clean the htmls and apply styling
-def do_html(booklist):
-    with open(path+"\\styling.txt", 'r', encoding="utf-8") as file:
+
+
+def html_processing(booklist, max_img_height):
+    whitelist = ['a', 'img', 'meta']
+    with open(path + "\\styling.txt", 'r', encoding="utf-8") as file:
         styletag = file.read()
 
     for bo in booklist:
@@ -71,7 +54,8 @@ def do_html(booklist):
 
 # kanji stuff
 
-def do_kanji(booklist):
+
+def kanji_processing(booklist):
     if os.path.isfile(kw_path):
         with open(kw_path, 'r', encoding="utf-8") as file:
             known_words = file.read()
@@ -89,7 +73,7 @@ def do_kanji(booklist):
         token_words = [word.surface for word in tagger(cleaned_book)]
         uniq_words = kana.get_unique_token_words(token_words)
         booktml, kanjiwords, lemmawords, unknown_words = kana.mark_known_words_sbl(
-            booktml, uniq_words, known_words,tagger)
+            booktml, uniq_words, known_words, tagger)
         booktml = kana.mark_kanjiwords(booktml, kanjiwords, known_words)
         booktml = kana.mark_lemmawords(booktml, lemmawords, known_words)
         booktml = kana.mark_known_kanji(booktml, known_kanji)
@@ -100,24 +84,46 @@ def do_kanji(booklist):
         with open(bo + "\\" + os.path.basename(bo) + "_marked.html", "w", encoding="utf-8") as wr:
             wr.write(booktml)
         print("\n\tSummary:\n")
-        print(" "*10 + str(len(uniq_words)) + " Total Unique Words")
-        print(" "*10 + str(len(known_words)) + " Total Known Words")
-        print(" "*10 + str(len(unknown_words)) + " Unknown Words were found\n")
-        print(" "*10 + str(len(uniq_kanji)) + " Total Unique Kanji")
-        print(" "*10 + str(len(known_kanji)) + " Total Known Kanji")
-        print(" "*10 + str(len(unknown_kanji)) + " Unknown Kanji were found")
+        print(" " * 10 + str(len(uniq_words)) + " Total Unique Words")
+        print(" " * 10 + str(len(known_words)) + " Total Known Words")
+        print(" " * 10 + str(len(unknown_words)) +
+              " Unknown Words were found\n")
+        print(" " * 10 + str(len(uniq_kanji)) + " Total Unique Kanji")
+        print(" " * 10 + str(len(known_kanji)) + " Total Known Kanji")
+        print(" " * 10 + str(len(unknown_kanji)) + " Unknown Kanji were found")
     return None
 
 
-def main():
-    if EXTRACT_MOBI:
-        booklist = extract_mobi()
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option('--extract-mobi', '-M',
+              is_flag=True,
+              help='extract mobi to html')
+@click.option('--do-html', '-H',
+              is_flag=True,
+              help='Process the raw html and apply styling')
+@click.option('--do-kanji', '-K',
+              help='mark known words/kanji in the html',
+              is_flag=True)
+@click.option('--bookdir', '-i',
+              type=click.Path(exists=True),
+              default='LNs/',
+              help='the dictionary which contains the books'
+              )
+@click.option('--max-img-height',
+              type=int,
+              default=1100,
+              help='image height inside the html')
+def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height):
+    if extract_mobi:
+        booklist = mobi_processing(bookdir)
+    else:
+        booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
+                if f.is_dir() and f.name[0] != '$']
+    if do_html:
+        html_processing(booklist, max_img_height)
 
-    if DO_HTML:
-        do_html(booklist)
-
-    if DO_KANJI:
-        do_kanji(booklist)
+    if do_kanji:
+        kanji_processing(booklist)
 
 
 if __name__ == '__main__':
