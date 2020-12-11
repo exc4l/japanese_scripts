@@ -1,12 +1,5 @@
 import os
-import mobi
-import shutil
-import re
 import fugashi
-import subprocess
-from glob import glob
-
-from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 import kanjianalyze as kana
@@ -81,7 +74,8 @@ def kanji_processing(booklist):
         uniq_kanji = kana.get_unique_kanji(uniq_words)
         unknown_kanji = uniq_kanji.difference(known_kanji)
         booktml = kana.mark_unknown_kanji(booktml, unknown_kanji)
-        with open(bo + "\\" + os.path.basename(bo) + "_marked.html", "w", encoding="utf-8") as wr:
+        with open(bo + "\\" + os.path.basename(bo) + "_marked.html",
+                  "w", encoding="utf-8") as wr:
             wr.write(booktml)
         print("\n\tSummary:\n")
         print(" " * 10 + str(len(uniq_words)) + " Total Unique Words")
@@ -118,7 +112,7 @@ def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height):
         booklist = mobi_processing(bookdir)
     else:
         booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
-                if f.is_dir() and f.name[0] != '$']
+                    if f.is_dir() and f.name[0] != '$']
     if do_html:
         html_processing(booklist, max_img_height)
 
