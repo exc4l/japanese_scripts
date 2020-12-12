@@ -16,7 +16,12 @@ current_date = now.strftime("%d/%m/%Y")
 @click.option('--no-kanjigrid', '-N',
               is_flag=True,
               help='do not create a kanjigrid')
-def main(no_kanjigrid):
+@click.option('--user', '-u',
+              type=click.STRING,
+              default='User 1',
+              help='Anki profile name'
+              )
+def main(no_kanjigrid, user):
     try:
         import fugashi
         tagger = fugashi.Tagger()
@@ -33,7 +38,7 @@ def main(no_kanjigrid):
 
     write_to_file_text = ''
 
-    col = Collection(user='User 1')
+    col = Collection(user=user)
     notes = col.cards.merge_notes()
 
     path = __loc__ + '\\resources'
