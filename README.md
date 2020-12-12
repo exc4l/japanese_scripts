@@ -31,6 +31,7 @@ and install it.
 All scripts are executed by themselves. Most do depend on the `.known_words.txt` in the resources folder, which means that anki_create_known_words.py should be used before executing the others. If Anki is not used to study vocabulary, you may want to look into other ways to estimate your vocabulary. The following just shows a short description of the usage. Please refer to the wiki for an elaborate guide and usage results.
 
 For more Information regarding defaults please also check the help in the cli.
+
 E.g. `python anki_create_known_words.py -h`
 ### anki_create_known_words.py
 Searches inside the Anki collection for note types defined in `./resources/anki_cards.txt` and creates the `.known_words.txt`. By default, it will also call  **create_kanjigrid.py** and draw a kanjigrid. This can be deactivated via the `--no-kanjigrid` flag.
