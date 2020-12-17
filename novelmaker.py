@@ -1,6 +1,7 @@
 import os
 import fugashi
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 import kanjianalyze as kana
 import html_prep as hpre
@@ -57,34 +58,60 @@ def kanji_processing(booklist):
 
     known_words = kana.markup_known_words(known_words)
     known_kanji = kana.get_unique_kanji(known_words)
+    repl_known_words = {w: f"<span class=\"knownword\">{w}</span>"
+                           for w in known_words}
+    pattern_known = kana.pattern_create(repl_known_words)
+    repl_kanji = {k: f"<span class=\"knownkanji\">{k}</span>"
+                     for k in known_kanji}
+    pattern_kanji = kana.pattern_create(repl_kanji)
 
-    for bo in booklist:
-        print("\nCurrently Converting: " + os.path.basename(bo))
-        with open(bo + "\\" + os.path.basename(bo) + ".html", 'r', encoding='utf-8') as file:
-            booktml = file.read()
-        cleaned_book = kana.markup_book_html(booktml)
-        token_words = [word.surface for word in tagger(cleaned_book)]
+    for novel in tqdm(booklist, ascii=True, desc='Marking Files'):
+        pbar = tqdm(total=100, position=1, leave=False)
+        pbar.set_description(f'{os.path.basename(novel)}')
+        with open(f"{novel}/{os.path.basename(novel)}.html",
+                  'r', encoding='utf-8') as file:
+            raw_book = file.read()
+        cleaned_book = kana.markup_book_html(raw_book)
+        cleaned_book = kana.reduce_new_lines(cleaned_book)
+        token_words = []
+        token_extend = token_words.extend
+        for sen in cleaned_book.split('\n'):
+            token_extend([word.surface for word in tagger(sen)])
+
         uniq_words = kana.get_unique_token_words(token_words)
-        booktml, kanjiwords, lemmawords, unknown_words = kana.mark_known_words_sbl(
-            booktml, uniq_words, known_words, tagger)
-        booktml = kana.mark_kanjiwords(booktml, kanjiwords, known_words)
-        booktml = kana.mark_lemmawords(booktml, lemmawords, known_words)
-        booktml = kana.mark_known_kanji(booktml, known_kanji)
-        kana.print_freq_lists(token_words, unknown_words, bo)
         uniq_kanji = kana.get_unique_kanji(uniq_words)
         unknown_kanji = uniq_kanji.difference(known_kanji)
-        booktml = kana.mark_unknown_kanji(booktml, unknown_kanji)
-        with open(bo + "\\" + os.path.basename(bo) + "_marked.html",
-                  "w", encoding="utf-8") as wr:
-            wr.write(booktml)
-        print("\n\tSummary:\n")
-        print(" " * 10 + str(len(uniq_words)) + " Total Unique Words")
-        print(" " * 10 + str(len(known_words)) + " Total Known Words")
-        print(" " * 10 + str(len(unknown_words)) +
-              " Unknown Words were found\n")
-        print(" " * 10 + str(len(uniq_kanji)) + " Total Unique Kanji")
-        print(" " * 10 + str(len(known_kanji)) + " Total Known Kanji")
-        print(" " * 10 + str(len(unknown_kanji)) + " Unknown Kanji were found")
+        repl_unknown_kanji = {k: f"<span class=\"unknownkanji\">{k}</span>"
+                              for k in unknown_kanji}
+        pattern_unknown_kanji = kana.pattern_create(repl_unknown_kanji)
+        repl_tagger = {t: f"<span class=\"taggerword\">{t}</span>"
+                       for t in uniq_words
+                       if t in known_words or kana.contains_lemma(
+                           t, known_words, tagger)}
+        
+        # bookhtml = kana.pattern_replacement(raw_book,
+        #                                     pattern_known, repl_known_words)
+
+        if repl_tagger:
+            pattern_tagger = kana.pattern_create(repl_tagger)
+            bookhtml = kana.pattern_replacement(raw_book,
+                                                pattern_tagger, repl_tagger)
+            # bookhtml = kana.pattern_replacement(bookhtml,
+            #                                     pattern_tagger, repl_tagger)
+        pbar.update(25)
+        bookhtml = kana.pattern_replacement(bookhtml,
+                                            pattern_known, repl_known_words)
+        pbar.update(25)
+        bookhtml = kana.pattern_replacement(bookhtml,
+                                            pattern_kanji, repl_kanji)
+        pbar.update(25)
+        bookhtml = kana.pattern_replacement(bookhtml,
+                                            pattern_unknown_kanji,
+                                            repl_unknown_kanji)
+        with open(f"{novel}/Marked_{os.path.basename(novel)}.html",
+                  'w', encoding='utf-8') as wr:
+            wr.write(bookhtml)
+        pbar.close()
     return None
 
 

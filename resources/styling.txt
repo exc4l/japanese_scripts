@@ -24,8 +24,12 @@ a {
   color: #b48ead;
 }
 .knownword {
-  color: #81a1c1;
+ color: #81a1c1;
   /*border-right: 2px dotted #81a1c1;*/
+}
+.taggerword {
+  /*text-decoration: underline #a3be8c;*/
+ color: #88C0D0;
 }
 .knownkanji {
   /*text-decoration: underline #a3be8c;*/

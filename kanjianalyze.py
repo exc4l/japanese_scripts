@@ -63,6 +63,16 @@ allcharset = set(allchars)
 alltrans = str.maketrans("", "", allchars)
 
 
+def pattern_create(replacements):
+    rep_sorted = sorted(replacements, key=len, reverse=True)
+    rep_escaped = map(re.escape, rep_sorted)
+    return re.compile("|".join(rep_escaped))
+
+
+def pattern_replacement(string, pattern, replacements):
+    return pattern.sub(lambda match: replacements[match.group(0)], string)
+
+
 def is_single_kana(word):
     if word is None:
         return False
@@ -92,15 +102,13 @@ def myindex(search_list, value):
     return list_idx
 
 
-def contains_lemma(word, known, tagger):
+def contains_lemma(word, known_set, tagger):
     lem = tagger(word)[0].feature.lemma
     if lem is None:
         return False
     lem = lem.translate(alphabettrans)
     lem = lem.translate(specialtrans)
-    if myindex(known, lem) >= 0:
-        return True
-    return False
+    return lem in known_set
 
 
 def markup_known_words(known_w):
