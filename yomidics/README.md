@@ -22,7 +22,7 @@ Is based on a corpus containing:
 12. この素晴らしい世界に祝福を！ Vol 1-17
 13. Re ゼロから始める異世界生活 Vol. 1-20
 
-## Netflix.zip
+## Netflix.zip/Nameflix/Migaku
 
 Is based off the frequency data that was generated from the Netflix subtitles by Ohtalkwho. Due to the extreme variety of shows on Netflix this one has a completely different orientation and usecase than the small ones I created.
-For example: 大阪(Osaka the town) doesn't appear in the Based.zip but has a high ranking in this one.
+For example: 大阪(Osaka the town) doesn't appear in the Based.zip but has a high ranking in these. Migaku is the frequency.json that was shared for Migaku. Nameflix is based on unidic with Names and Netflix on the unidic list without names.
