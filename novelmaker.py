@@ -1,4 +1,5 @@
 import os
+import shutil
 import fugashi
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -66,7 +67,7 @@ def kanji_processing(booklist):
     pattern_kanji = kana.pattern_create(repl_kanji)
 
     for novel in tqdm(booklist, ascii=True, desc='Marking Files'):
-        pbar = tqdm(total=100, position=1, leave=False)
+        pbar = tqdm(total=100, position=1, leave=False, ascii=True)
         pbar.set_description(f'{os.path.basename(novel)}')
         with open(f"{novel}/{os.path.basename(novel)}.html",
                   'r', encoding='utf-8') as file:
@@ -88,7 +89,6 @@ def kanji_processing(booklist):
                        for t in uniq_words
                        if t in known_words or kana.contains_lemma(
                            t, known_words, tagger)}
-        
         # bookhtml = kana.pattern_replacement(raw_book,
         #                                     pattern_known, repl_known_words)
 
@@ -115,6 +115,37 @@ def kanji_processing(booklist):
     return None
 
 
+def split_creation(booklist, split):
+    h1, h2 = hpre.get_html_parts()
+    splitdir = r'Split'
+    for novel in tqdm(booklist, ascii=True, desc='Splitting Books'):
+        if os.path.isfile(f"{novel}/Marked_{os.path.basename(novel)}.html"):
+            with open(f"{novel}/Marked_{os.path.basename(novel)}.html",
+                      'r', encoding='utf-8') as file:
+                raw_book = file.read()
+        else:
+            if os.path.isfile(f"{novel}/{os.path.basename(novel)}.html"):
+                with open(f"{novel}/{os.path.basename(novel)}.html",
+                          'r', encoding='utf-8') as file:
+                    raw_book = file.read()
+            else:
+                print(f'nothing to split here: {novel}')
+                break
+        pages = hpre.get_splits(raw_book, split)
+        for i in range(len(pages)):
+            pages[i] = pages[i].replace('Images', '../Images')
+        if not os.path.isdir(f'{novel}/{splitdir}'):
+            os.mkdir(f'{novel}/{splitdir}')
+        else:
+            shutil.rmtree(f'{novel}/{splitdir}')
+            os.mkdir(f'{novel}/{splitdir}')
+        for i in range(len(pages)):
+            with open((f'{novel}/{splitdir}/{i:0>3d}_'
+                      f'{os.path.basename(novel)}.html'),
+                      'w', encoding='utf-8') as wr:
+                wr.write(h1+pages[i]+h2)
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--extract-mobi', '-M',
               is_flag=True,
@@ -134,7 +165,11 @@ def kanji_processing(booklist):
               type=int,
               default=1100,
               help='image height inside the html')
-def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height):
+@click.option('--split', '-S',
+              type=int,
+              default=0,
+              help='Split the ebook every N. Recommneded values: 50, 100, 200')
+def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height, split):
     if extract_mobi:
         booklist = mobi_processing(bookdir)
     else:
@@ -145,6 +180,8 @@ def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height):
 
     if do_kanji:
         kanji_processing(booklist)
+    if split:
+        split_creation(booklist, split)
 
 
 if __name__ == '__main__':
