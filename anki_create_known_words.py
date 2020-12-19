@@ -81,15 +81,18 @@ def main(no_kanjigrid, user):
     uniq_w = list(set(words))
 
     extra = []
+    # for a better reprensation of what i actually known
+    # it would probably be better to do this right before any processing
+    # and not now which just inflates the numbers
     if EXTRA:
         for w in uniq_w:
-            tags = tagger(w)
-            if len(tags) > 1:
-                for t in tags:
-                    tl = t.feature.lemma
-                    if tl not in uniq_w and not kana.is_single_kana(tl):
-                        #                 print(tl)
-                        extra.append(tl)
+            tags = [word.feature.lemma for word in tagger(w)
+                    if word.feature.lemma]
+            tags = [kana.clean_lemma(token) for token in tags
+                    if not kana.is_single_kana(token)]
+            for t in tags:
+                if t not in uniq_w:
+                    extra.append(t)
 
     extra = list(set(extra))
     uniq_w.extend(extra)

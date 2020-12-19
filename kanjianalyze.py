@@ -19,6 +19,8 @@ katakana = ("アエイオウカケキコクサシスセソタチツテトナニ�
             "マミムメモヤユヨラリルレロワヲウンガギグゲゴザジズゼゾダヂヅ"
             "デドバビブベボパピプペポょャュィョェァォッーゥヮヴヵヶ")
 
+kanaset = set(katakana+hiragana)
+
 specialchars = ['\u3000', '、', '。', '《', '》', '！', '「', '」', '[', ']',
                 '&', '-', '/', '\'', '（', '）', '=',
                 '\"', '?', '◎', '-', '+', '】', '◆', '○', '×', '<', '>',
@@ -74,9 +76,7 @@ def pattern_replacement(string, pattern, replacements):
 
 
 def is_single_kana(word):
-    if word is None:
-        return False
-    if word in hiragana or word in katakana:
+    if word in kanaset:
         return True
     return False
 
@@ -179,7 +179,7 @@ def remove_non_kanji(words):
 def get_unique_token_words(token_words):
     token_words = [i for i in token_words if i]
     uniq = [i for i in token_words if i not in allchars]
-    return list(set(uniq))
+    return set(uniq)
 
 
 def get_unknown_words(uniq_words, known_words, tagger):

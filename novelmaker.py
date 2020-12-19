@@ -43,7 +43,8 @@ def html_processing(booklist, max_img_height):
         soup = hpre.add_style(soup, styletag)
         soup = hpre.pop_img_width(soup)
         soup = hpre.limit_img_height(soup, max_img_height)
-        with open(bo + "\\" + os.path.basename(bo) + ".html", 'w', encoding='utf-8') as wr:
+        with open(bo + "\\" + os.path.basename(bo) + ".html",
+                  'w', encoding='utf-8') as wr:
             wr.write(soup.prettify())
     return None
 
@@ -185,6 +186,27 @@ def interactive_selection(booklist):
         return interactive_selection(booklist)
     else:
         print('unlucky')
+        raise ValueError
+
+
+def report_function(booklist):
+    return
+    if os.path.isfile(kw_path):
+        with open(kw_path, 'r', encoding="utf-8") as file:
+            known_words = file.read()
+
+    tagger = fugashi.Tagger()
+    add_data = [{'Total Words': current_date, 'Known Words': current_time,
+                 'Total Kanji': len(muniq), 'Unknown Kanji': len(uniqK),
+                 , 'Number Sentences': a,
+                 'Readable Sentences': b}]
+    for novel in booklist:
+        with open(f"{novel}/{os.path.basename(novel)}.html",
+                  'r', encoding='utf-8') as file:
+            raw_book = file.read()
+        cleaned_book = kana.markup_book_html(raw_book)
+        cleaned_book = kana.reduce_new_lines(cleaned_book)
+
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -209,13 +231,17 @@ def interactive_selection(booklist):
 @click.option('--split', '-S',
               type=int,
               default=0,
-              help='Split the ebook every N. Recommneded values: 50, 100, 200')
+              help='Split the ebook every N. Recommneded min value: 50')
 @click.option('--interactive',
               is_flag=True,
               help=('Select which books to process. Doesn\'t affect '
                     'mobi extraction.'))
+@click.option('--report', '-R',
+              is_flag=True,
+              help=('Creates a report based on unpacked novels. '
+                    'Forces do-html.'))
 def main(extract_mobi, do_html, do_kanji,
-         bookdir, max_img_height, split, interactive):
+         bookdir, max_img_height, split, interactive, report):
     if extract_mobi:
         booklist = mobi_processing(bookdir)
     else:
@@ -224,13 +250,17 @@ def main(extract_mobi, do_html, do_kanji,
     if interactive:
         booklist = interactive_selection(booklist)
 
-    if do_html:
+    if do_html or report:
         html_processing(booklist, max_img_height)
 
     if do_kanji:
         kanji_processing(booklist)
+
     if split:
         split_creation(booklist, split)
+
+    if report:
+        pass
 
 
 if __name__ == '__main__':
