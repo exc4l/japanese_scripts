@@ -146,6 +146,47 @@ def split_creation(booklist, split):
                 wr.write(h1+pages[i]+h2)
 
 
+def interactive_selection(booklist):
+    booklist.sort()
+    for i, item in enumerate(booklist, 1):
+        print(i, '. ' + item[4:], sep='')
+    print('Choose the Series with the provided numbers.'
+          ' Use commas to seperate.')
+    print('E.g. 1,2,3 for the first 3.')
+    print('You can use a hyphen to specify ranges.')
+    print('E.g. 1-3 for 1,2,3')
+    val = input("Enter the Books you want to process (A for all): ")
+    if val == 'A':
+        validx = list(range(1, len(booklist) + 1))
+    else:
+        val = val.split(',')
+        validx = []
+        for v in val:
+            if '-' in v:
+                vlist = v.split('-')
+                vlist = [int(t) for t in vlist]
+                vlist = list(range(vlist[0], vlist[1] + 1))
+                validx.extend(vlist)
+            else:
+                validx.append(int(v))
+    validx = list(set(validx))
+    validx.sort()
+    print(validx)
+    selected_list = []
+    for v in validx:
+        cur_sel = booklist[v-1]
+        selected_list.append(cur_sel)
+    print('\n'.join(selected_list))
+    print('Is the selection correct?')
+    val = input("[y]es or [n]o: ")
+    if val[0].lower() == 'y':
+        return selected_list
+    elif val[0].lower() == 'n':
+        return interactive_selection(booklist)
+    else:
+        print('unlucky')
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--extract-mobi', '-M',
               is_flag=True,
@@ -158,7 +199,7 @@ def split_creation(booklist, split):
               is_flag=True)
 @click.option('--bookdir', '-i',
               type=click.Path(exists=True),
-              default='LNs/',
+              default='LNs',
               help='the dictionary which contains the books'
               )
 @click.option('--max-img-height',
@@ -169,12 +210,20 @@ def split_creation(booklist, split):
               type=int,
               default=0,
               help='Split the ebook every N. Recommneded values: 50, 100, 200')
-def main(extract_mobi, do_html, do_kanji, bookdir, max_img_height, split):
+@click.option('--interactive',
+              is_flag=True,
+              help=('Select which books to process. Doesn\'t affect '
+                    'mobi extraction.'))
+def main(extract_mobi, do_html, do_kanji,
+         bookdir, max_img_height, split, interactive):
     if extract_mobi:
         booklist = mobi_processing(bookdir)
     else:
         booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
                     if f.is_dir() and f.name[0] != '$']
+    if interactive:
+        booklist = interactive_selection(booklist)
+
     if do_html:
         html_processing(booklist, max_img_height)
 

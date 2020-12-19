@@ -1,4 +1,4 @@
-### creates a yomichan dictionary by analyzing the available corpus
+# creates a yomichan dictionary by analyzing the available corpus
 import kanjianalyze as kana
 import os
 import fugashi
@@ -27,7 +27,7 @@ for i,item in enumerate(shorted_subfol,1):
 
 print('Choose the Series with the provided numbers. Use commas to seperate.')
 print('E.g. 1,2,3 for the first 3')
-val = input("Enter the Series you want to use (A for all): ") 
+val = input("Enter the Series you want to use (A for all): ")
 
 if val == 'A':
     val = list(range(1,len(shorted_subfol)+1))
