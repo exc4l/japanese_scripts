@@ -7,7 +7,7 @@ from tqdm import tqdm
 import kanjianalyze as kana
 import html_prep as hpre
 import mobiextract as moex
-import pandas as pd
+
 import click
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
 
@@ -191,6 +191,8 @@ def interactive_selection(booklist):
 
 
 def report_function(booklist):
+    from collections import Counter
+    import pandas as pd
     if os.path.isfile(kw_path):
         with open(kw_path, 'r', encoding="utf-8") as file:
             known_words = file.read()
@@ -222,6 +224,7 @@ def report_function(booklist):
             if not sentence_tokens.difference(known_words):
                 readcounter += 1
             token_extend(sentence_tokens)
+        token_counter = Counter(token_words)
         token_words = set(token_words)
         known_tokens = token_words.intersection(known_words)
         unknown_tokens = token_words.difference(known_tokens)
@@ -245,6 +248,13 @@ def report_function(booklist):
                      'Readable Sentences': readcounter,
                      'Easy Read Percentage': easy_read_per}]
         reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+        counterstr = ''
+        for k, v in token_counter.most_common():
+            if k not in known_words:
+                counterstr += f'{k}, {v}\n'
+        with open(f'{reportdir}/{os.path.basename(novel)}.txt',
+                  'w', encoding='utf-8') as wr:
+            wr.write(counterstr)
     if not os.path.isdir(reportdir):
         os.mkdir(reportdir)
     reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
