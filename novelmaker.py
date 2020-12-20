@@ -7,6 +7,7 @@ from tqdm import tqdm
 import kanjianalyze as kana
 import html_prep as hpre
 import mobiextract as moex
+import pandas as pd
 import click
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
 
@@ -18,9 +19,9 @@ path = __loc__ + '\\resources'
 kw_path = path + '\\.known_words.txt'
 
 
-def mobi_processing(bookdir):
-    booklist = moex.extract_mobi_folder(bookdir)
-    print('\n'.join(booklist))
+def mobi_processing(bookdir, force_mobi):
+    booklist = moex.extract_mobi_folder(bookdir, force=force_mobi)
+    # print('\n'.join(booklist))
     # for bo in booklist:
     #     print(bo + "\\book.html")
     #     print(bo + "\\" + os.path.basename(bo) + ".html")
@@ -34,7 +35,7 @@ def html_processing(booklist, max_img_height):
     with open(path + "\\styling.txt", 'r', encoding="utf-8") as file:
         styletag = file.read()
 
-    for bo in booklist:
+    for bo in tqdm(booklist, ascii=True, desc='HTML Processing'):
         with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
             booktml = file.read()
         booktml = kana.remove_furigana_font(booktml)
@@ -190,29 +191,72 @@ def interactive_selection(booklist):
 
 
 def report_function(booklist):
-    return
     if os.path.isfile(kw_path):
         with open(kw_path, 'r', encoding="utf-8") as file:
             known_words = file.read()
-
+        known_words = kana.markup_known_words(known_words)
+    else:
+        print('please create a .known_words.txt')
+        raise FileNotFoundError
     tagger = fugashi.Tagger()
-    add_data = [{'Total Words': current_date, 'Known Words': current_time,
-                 'Total Kanji': len(muniq), 'Unknown Kanji': len(uniqK),
-                 , 'Number Sentences': a,
-                 'Readable Sentences': b}]
-    for novel in booklist:
+    reportdf = pd.DataFrame()
+    reportdir = f'{os.path.dirname(booklist[0])}/$_report'
+    reportname = 'report.csv'
+    for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
         with open(f"{novel}/{os.path.basename(novel)}.html",
                   'r', encoding='utf-8') as file:
             raw_book = file.read()
         cleaned_book = kana.markup_book_html(raw_book)
         cleaned_book = kana.reduce_new_lines(cleaned_book)
-
+        sentences = cleaned_book.split('\n')
+        token_words = []
+        token_extend = token_words.extend
+        readcounter = 0
+        for sen in sentences:
+            sentence_tokens = [word.feature.lemma if word.feature.lemma
+                               else word.surface for word in tagger(sen)]
+            sentence_tokens = [kana.clean_lemma(token) for token
+                               in sentence_tokens
+                               if not kana.is_single_kana(token)]
+            sentence_tokens = kana.get_unique_token_words(sentence_tokens)
+            if not sentence_tokens.difference(known_words):
+                readcounter += 1
+            token_extend(sentence_tokens)
+        token_words = set(token_words)
+        known_tokens = token_words.intersection(known_words)
+        unknown_tokens = token_words.difference(known_tokens)
+        known_per = int(100*len(known_tokens)/len(token_words))
+        total_kanji = kana.get_unique_kanji(cleaned_book)
+        known_words_kanji = kana.get_unique_kanji(known_words)
+        known_kanji = total_kanji.intersection(known_words_kanji)
+        unknown_kanji = total_kanji.difference(known_kanji)
+        known_kanji_per = int(100*len(known_kanji)/len(total_kanji))
+        easy_read_per = int(100*readcounter/len(sentences))
+        add_data = [{'Name': os.path.basename(novel),
+                     'Total Words': len(token_words),
+                     'Known Words': len(known_tokens),
+                     'Unknown Words': len(unknown_tokens),
+                     'Known Percentage': known_per,
+                     'Total Kanji': len(total_kanji),
+                     'Known Kanji': len(known_kanji),
+                     'Unknown Kanji': len(unknown_kanji),
+                     'Known Kanji Percentage': known_kanji_per,
+                     'Number Sentences': len(sentences),
+                     'Readable Sentences': readcounter,
+                     'Easy Read Percentage': easy_read_per}]
+        reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+    if not os.path.isdir(reportdir):
+        os.mkdir(reportdir)
+    reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--extract-mobi', '-M',
               is_flag=True,
               help='extract mobi to html')
+@click.option('--force-mobi',
+              is_flag=True,
+              help='forces the extraction of all mobis')
 @click.option('--do-html', '-H',
               is_flag=True,
               help='Process the raw html and apply styling')
@@ -228,23 +272,33 @@ def report_function(booklist):
               type=int,
               default=1100,
               help='image height inside the html')
-@click.option('--split', '-S',
+@click.option('--split',
               type=int,
               default=0,
               help='Split the ebook every N. Recommneded min value: 50')
-@click.option('--interactive',
-              is_flag=True,
-              help=('Select which books to process. Doesn\'t affect '
-                    'mobi extraction.'))
 @click.option('--report', '-R',
               is_flag=True,
               help=('Creates a report based on unpacked novels. '
                     'Forces do-html.'))
-def main(extract_mobi, do_html, do_kanji,
-         bookdir, max_img_height, split, interactive, report):
+@click.option('--activate-all', '-A',
+              is_flag=True,
+              help='Activates every flag besides force options.')
+@click.option('--interactive',
+              is_flag=True,
+              help=('Select which books to process. Doesn\'t affect '
+                    'mobi extraction.'))
+def main(extract_mobi, force_mobi, do_html, do_kanji,
+         bookdir, max_img_height, split, report, activate_all, interactive):
+    if activate_all:
+        extract_mobi = True
+        do_html = True
+        do_kanji = True
+        # split = 100
+        report = True
+
     if extract_mobi:
-        booklist = mobi_processing(bookdir)
-    else:
+        booklist = mobi_processing(bookdir, force_mobi)
+    if not force_mobi:
         booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
                     if f.is_dir() and f.name[0] != '$']
     if interactive:
@@ -260,7 +314,7 @@ def main(extract_mobi, do_html, do_kanji,
         split_creation(booklist, split)
 
     if report:
-        pass
+        report_function(booklist)
 
 
 if __name__ == '__main__':

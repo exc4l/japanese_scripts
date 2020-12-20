@@ -1,6 +1,6 @@
 import os
 import mobi
-import glob
+from glob import glob
 import shutil
 
 
@@ -11,21 +11,28 @@ def copy_delcopy(from_path, to_path):
     shutil.copytree(from_path, to_path)
 
 
-def extract_mobi_folder(booksdir):
+def extract_mobi_folder(bookdir, force=False):
     # used lists
-    # mobi extracts the mobis into some temp dicts and this list will hold the paths
-    templist=[]
+    # mobi extracts the mobis into some temp dicts and this list will hold
+    # the paths
+    templist = []
     # convlist will be holding directionary for after the conversion
-    convlist=[]
-    
+    convlist = []
+
     # create list of all mobis inside the bookdir
-    mobilist = glob.glob(booksdir+"/*.mobi")
-    
+    mobilist = [
+        f.path for f in os.scandir(bookdir) if f.is_file()
+        and os.path.splitext(f)[1] in ('.mobi',)
+        and not os.path.isdir(os.path.splitext(f)[0])
+        ]
+    if force:
+        mobilist = glob(bookdir+"/*.mobi")
     # extract the mobis
     for f in mobilist:
         tempdir, _ = mobi.extract(f)
         templist.append(tempdir+"\\mobi7")
-    # dictiorary names after conversion is just the filename minus the extension
+    # dictiorary names after conversion is just the filename
+    # minus the extension
     for f in mobilist:
         convlist.append(os.path.splitext(f)[0])
     # copy over the mobi file structure
@@ -43,4 +50,3 @@ if __name__ == "__main__":
     bookdir = ".\\books"
     booklist = extract_mobi_folder(bookdir)
     print(booklist)
-

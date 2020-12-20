@@ -116,7 +116,7 @@ def markup_known_words(known_w):
     # known = known_w.translate(alphabettrans)
     # known = known.translate(specialtrans)
     known = known.split("\n")
-    return known
+    return set(known)
 
 
 def markup_book_html(bookstr):
@@ -177,8 +177,8 @@ def remove_non_kanji(words):
 
 
 def get_unique_token_words(token_words):
-    token_words = [i for i in token_words if i]
-    uniq = [i for i in token_words if i not in allchars]
+    uniq = [i for i in token_words if i and i not in allcharset]
+    # uniq = [i for i in token_words if i not in allcharset]
     return set(uniq)
 
 
