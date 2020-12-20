@@ -203,7 +203,7 @@ def report_function(booklist):
     tagger = fugashi.Tagger()
     reportdf = pd.DataFrame()
     reportdir = f'{os.path.dirname(booklist[0])}/$_report'
-    reportname = 'report.csv'
+    reportname = '$report.csv'
     for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
         with open(f"{novel}/{os.path.basename(novel)}.html",
                   'r', encoding='utf-8') as file:
