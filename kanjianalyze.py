@@ -154,12 +154,7 @@ def markup_book_html_test(bookstr):
 
 
 def reduce_new_lines(bookstr):
-    bookstr = bookstr.replace('\n\n\n\n\n\n\n\n', '\n')
-    bookstr = bookstr.replace('\n\n\n\n\n\n', '\n')
-    bookstr = bookstr.replace('\n\n\n\n', '\n')
-    bookstr = bookstr.replace('\n\n\n', '\n')
-    bookstr = bookstr.replace('\n\n', '\n')
-    return bookstr
+    return re.sub(r'\n+', '\n', bookstr)
 
 
 def get_unique_kanji(words):
