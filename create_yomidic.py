@@ -1,6 +1,7 @@
 # creates a yomichan dictionary by analyzing the available corpus
 import kanjianalyze as kana
 import os
+import shutil
 import fugashi
 tagger = fugashi.Tagger()
 
@@ -101,6 +102,8 @@ zipObj.close()
 
 print('\nSuccessfully created the dictionaries in yomidics/\n')
 
+shutil.rmtree(f'{yomitemp}')
+
 with open(f'{yomidir}{title}_freq.txt', 'w', encoding='utf-8') as wr:
     for w,f in token_counter.most_common():
             wr.write(f"{w}, {f}\n")
@@ -132,6 +135,7 @@ if os.path.isfile(kw_path):
     known_words = kana.markup_known_words(known_words)
 
     with open(f'{yomidir}{title}_unknown_freq.txt', 'w', encoding='utf-8') as wr:
-        for w,f in token_counter.most_common():
-            if w not in known_words:
+        for w, f in token_counter.most_common():
+            if (w not in known_words and
+               not kana.contains_lemma(w, known_words, tagger)):
                 wr.write(f"{w}, {f}\n")
