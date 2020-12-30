@@ -55,6 +55,13 @@ specialtrans = str.maketrans("", "", "".join(specialchars))
 
 notkana = numbers + alphastring + alphawide + "".join(specialchars)
 
+notkanaset = set(notkana)
+
+notkana_small = notkanaset
+notkana_small.difference_update(set(sentencemarker))
+notkana_small = ''.join(notkana_small)
+notkana_smalltrans = str.maketrans('', '', notkana_small)
+
 notkanatrans = str.maketrans('', '', notkana)
 
 allchars = hiragana + katakana + \
@@ -120,9 +127,7 @@ def markup_known_words(known_w):
 
 
 def markup_book_html(bookstr):
-    for i in notkana:
-        if i not in sentencemarker:
-            bookstr = bookstr.replace(i, '')
+    bookstr = bookstr.translate(notkana_smalltrans)
     return bookstr
 
 
@@ -138,18 +143,6 @@ def markup_book_html_rem_furigana(bookstr):
     for i in notkana:
         if i not in sentencemarker:
             bookstr = bookstr.replace(i, '')
-    return bookstr
-
-# figured translate might be faster
-
-
-def markup_book_html_test(bookstr):
-    notkana_small = set(notkana)
-    notkana_small.difference_update(set(sentencemarker))
-    notkana_small = ''.join(notkana_small)
-
-    notkana_smalltrans = str.maketrans('', '', notkana_small)
-    bookstr = bookstr.translate(notkana_smalltrans)
     return bookstr
 
 
