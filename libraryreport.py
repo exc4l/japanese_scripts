@@ -27,17 +27,18 @@ def html_processing(booklist, max_img_height):
         styletag = file.read()
 
     for bo in tqdm(booklist, ascii=True, desc='HTML Processing'):
-        with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
-            booktml = file.read()
-        booktml = kana.remove_furigana_font(booktml)
-        soup = BeautifulSoup(booktml, 'lxml')
-        soup = hpre.strip_tags_and_font(soup, whitelist)
-        soup = hpre.add_style(soup, styletag)
-        soup = hpre.pop_img_width(soup)
-        soup = hpre.limit_img_height(soup, max_img_height)
-        with open(bo + "\\" + os.path.basename(bo) + ".html",
-                  'w', encoding='utf-8') as wr:
-            wr.write(soup.prettify())
+        if not os.path.isfile(bo + "\\" + os.path.basename(bo) + ".html"):
+            with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
+                booktml = file.read()
+            booktml = kana.remove_furigana_font(booktml)
+            soup = BeautifulSoup(booktml, 'lxml')
+            soup = hpre.strip_tags_and_font(soup, whitelist)
+            soup = hpre.add_style(soup, styletag)
+            soup = hpre.pop_img_width(soup)
+            soup = hpre.limit_img_height(soup, max_img_height)
+            with open(bo + "\\" + os.path.basename(bo) + ".html",
+                      'w', encoding='utf-8') as wr:
+                wr.write(soup.prettify())
     return None
 
 
@@ -53,7 +54,37 @@ def report_function(booklist):
     for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
         reportfile = f'{reportdir}/{os.path.basename(novel)}.txt'
         if os.path.isfile(reportfile):
-            pass
+            with open(reportfile, 'r', encoding='utf-8') as file:
+                rtxt = file.read().splitlines()
+            rdict = {}
+            for line in rtxt:
+                key, value = line.split(',')
+                rdict[key] = int(value)
+            with open(f"{novel}/{os.path.basename(novel)}.html",
+                      'r', encoding='utf-8') as file:
+                raw_book = file.read()
+            cleaned_book = kana.markup_book_html(raw_book)
+            cleaned_book = kana.reduce_new_lines(cleaned_book)
+            sentences = cleaned_book.split('\n')
+            all_kanji = kana.remove_non_kanji(cleaned_book)
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
+            add_data = [{'Name': os.path.basename(novel),
+                         'Number Sentences': len(sentences),
+                         'Total Words': len(rdict),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 2+': n2plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 10+': n10plus
+                         }]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
         else:
             with open(f"{novel}/{os.path.basename(novel)}.html",
                       'r', encoding='utf-8') as file:
@@ -73,11 +104,24 @@ def report_function(booklist):
                 token_extend(sentence_tokens)
             token_counter = Counter(token_words)
             token_words = set(token_words)
-            total_kanji = kana.get_unique_kanji(cleaned_book)
+            all_kanji = kana.remove_non_kanji(cleaned_book)
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
             add_data = [{'Name': os.path.basename(novel),
-                         'Total Words': len(token_words),
-                         'Total Kanji': len(total_kanji),
-                         'Number Sentences': len(sentences)}]
+                         'Number Sentences': len(sentences),
+                         'Total Words': len(rdict),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 2+': n2plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 10+': n10plus
+                         }]
             reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
             counterstr = ''
             for k, v in token_counter.most_common():

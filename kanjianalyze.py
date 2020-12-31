@@ -154,18 +154,16 @@ def reduce_new_lines(bookstr):
     return re.sub(r'\n+', '\n', bookstr)
 
 
-def get_unique_kanji(words):
-    wordlist = ''.join(words)
-    wordlist = wordlist.translate(alltrans)
-    wordlist = wordlist.replace('\n', '')
-    return set(wordlist)
-
-
 def remove_non_kanji(words):
     wordlist = ''.join(words)
     wordlist = wordlist.translate(alltrans)
     wordlist = wordlist.replace('\n', '')
     return wordlist
+
+
+def get_unique_kanji(words):
+    wordlist = remove_non_kanji(words)
+    return set(wordlist)
 
 
 def get_unique_token_words(token_words):
