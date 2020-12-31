@@ -36,17 +36,18 @@ def html_processing(booklist, max_img_height):
         styletag = file.read()
 
     for bo in tqdm(booklist, ascii=True, desc='HTML Processing'):
-        with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
-            booktml = file.read()
-        booktml = kana.remove_furigana_font(booktml)
-        soup = BeautifulSoup(booktml, 'lxml')
-        soup = hpre.strip_tags_and_font(soup, whitelist)
-        soup = hpre.add_style(soup, styletag)
-        soup = hpre.pop_img_width(soup)
-        soup = hpre.limit_img_height(soup, max_img_height)
-        with open(bo + "\\" + os.path.basename(bo) + ".html",
-                  'w', encoding='utf-8') as wr:
-            wr.write(soup.prettify())
+        if not os.path.isfile(bo + "\\" + os.path.basename(bo) + ".html"):
+            with open(bo + "\\book.html", 'r', encoding='utf-8') as file:
+                booktml = file.read()
+            booktml = kana.remove_furigana_font(booktml)
+            soup = BeautifulSoup(booktml, 'lxml')
+            soup = hpre.strip_tags_and_font(soup, whitelist)
+            soup = hpre.add_style(soup, styletag)
+            soup = hpre.pop_img_width(soup)
+            soup = hpre.limit_img_height(soup, max_img_height)
+            with open(bo + "\\" + os.path.basename(bo) + ".html",
+                      'w', encoding='utf-8') as wr:
+                wr.write(soup.prettify())
     return None
 
 # kanji stuff
