@@ -51,36 +51,40 @@ def report_function(booklist):
     if not os.path.isdir(reportdir):
         os.mkdir(reportdir)
     for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
-        with open(f"{novel}/{os.path.basename(novel)}.html",
-                  'r', encoding='utf-8') as file:
-            raw_book = file.read()
-        cleaned_book = kana.markup_book_html(raw_book)
-        cleaned_book = kana.reduce_new_lines(cleaned_book)
-        sentences = cleaned_book.split('\n')
-        token_words = []
-        token_extend = token_words.extend
-        for sen in sentences:
-            sentence_tokens = [word.feature.lemma if word.feature.lemma
-                               else word.surface for word in tagger(sen)]
-            sentence_tokens = [kana.clean_lemma(token) for token
-                               in sentence_tokens
-                               if not kana.is_single_kana(token)]
-            sentence_tokens = kana.get_unique_token_words(sentence_tokens)
-            token_extend(sentence_tokens)
-        token_counter = Counter(token_words)
-        token_words = set(token_words)
-        total_kanji = kana.get_unique_kanji(cleaned_book)
-        add_data = [{'Name': os.path.basename(novel),
-                     'Total Words': len(token_words),
-                     'Total Kanji': len(total_kanji),
-                     'Number Sentences': len(sentences)}]
-        reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
-        counterstr = ''
-        for k, v in token_counter.most_common():
-            counterstr += f'{k}, {v}\n'
-        with open(f'{reportdir}/{os.path.basename(novel)}.txt',
-                  'w', encoding='utf-8') as wr:
-            wr.write(counterstr)
+        reportfile = f'{reportdir}/{os.path.basename(novel)}.txt'
+        if os.path.isfile(reportfile):
+            pass
+        else:
+            with open(f"{novel}/{os.path.basename(novel)}.html",
+                      'r', encoding='utf-8') as file:
+                raw_book = file.read()
+            cleaned_book = kana.markup_book_html(raw_book)
+            cleaned_book = kana.reduce_new_lines(cleaned_book)
+            sentences = cleaned_book.split('\n')
+            token_words = []
+            token_extend = token_words.extend
+            for sen in sentences:
+                sentence_tokens = [word.feature.lemma if word.feature.lemma
+                                   else word.surface for word in tagger(sen)]
+                sentence_tokens = [kana.clean_lemma(token) for token
+                                   in sentence_tokens
+                                   if not kana.is_single_kana(token)]
+                sentence_tokens = kana.get_unique_token_words(sentence_tokens)
+                token_extend(sentence_tokens)
+            token_counter = Counter(token_words)
+            token_words = set(token_words)
+            total_kanji = kana.get_unique_kanji(cleaned_book)
+            add_data = [{'Name': os.path.basename(novel),
+                         'Total Words': len(token_words),
+                         'Total Kanji': len(total_kanji),
+                         'Number Sentences': len(sentences)}]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+            counterstr = ''
+            for k, v in token_counter.most_common():
+                counterstr += f'{k}, {v}\n'
+            with open(f'{reportdir}/{os.path.basename(novel)}.txt',
+                      'w', encoding='utf-8') as wr:
+                wr.write(counterstr)
     reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
 
 
