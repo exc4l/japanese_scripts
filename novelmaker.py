@@ -232,24 +232,45 @@ def report_function(booklist):
         known_tokens = token_words.intersection(known_words)
         unknown_tokens = token_words.difference(known_tokens)
         known_per = int(100*len(known_tokens)/len(token_words))
-        total_kanji = kana.get_unique_kanji(cleaned_book)
+
+        # kanji counting
+        all_kanji = kana.remove_non_kanji(cleaned_book)
+        uniq_kanji = set(all_kanji)
+        kanji_counter = Counter(all_kanji)
+        # appears at least two times aka 2+ times
+        n2plus = set(k for k, c in kanji_counter.items() if c >= 2)
+        # appears at least 5 times aka 5+ times
+        n5plus = set(k for k, c in kanji_counter.items() if c >= 5)
+        # appears at least 10 times aka 10+ times
+        n10plus = set(k for k, c in kanji_counter.items() if c >= 10)
+        # total_kanji = kana.get_unique_kanji(cleaned_book)
         known_words_kanji = kana.get_unique_kanji(known_words)
-        known_kanji = total_kanji.intersection(known_words_kanji)
-        unknown_kanji = total_kanji.difference(known_kanji)
-        known_kanji_per = int(100*len(known_kanji)/len(total_kanji))
+        known_kanji = uniq_kanji.intersection(known_words_kanji)
+        unknown_kanji = uniq_kanji.difference(known_kanji)
+        known_kanji_per = int(100*len(known_kanji)/len(uniq_kanji))
         easy_read_per = int(100*readcounter/len(sentences))
+        known10plusper = int(100*len(n10plus.intersection(known_kanji))
+                             / len(n10plus))
         add_data = [{'Name': os.path.basename(novel),
+                     'Number Sentences': len(sentences),
+                     'Readable Sentences': readcounter,
+                     'Easy Read Percentage': easy_read_per,
                      'Total Words': len(token_words),
                      'Known Words': len(known_tokens),
                      'Unknown Words': len(unknown_tokens),
                      'Known Percentage': known_per,
-                     'Total Kanji': len(total_kanji),
+                     'Total Kanji': len(uniq_kanji),
                      'Known Kanji': len(known_kanji),
                      'Unknown Kanji': len(unknown_kanji),
                      'Known Kanji Percentage': known_kanji_per,
-                     'Number Sentences': len(sentences),
-                     'Readable Sentences': readcounter,
-                     'Easy Read Percentage': easy_read_per}]
+                     'Kanji 10+': len(n10plus),
+                     'Known 10+': len(n10plus.intersection(known_kanji)),
+                     'Known 10+ Percentage': known10plusper,
+                     'Kanji 5+': len(n5plus),
+                     'Known 5+': len(n5plus.intersection(known_kanji)),
+                     'Kanji 2+': len(n2plus),
+                     'Known 2+': len(n2plus.intersection(known_kanji))
+                     }]
         reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
         counterstr = ''
         for k, v in token_counter.most_common():

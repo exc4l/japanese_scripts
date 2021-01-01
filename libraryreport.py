@@ -80,9 +80,9 @@ def report_function(booklist):
                          'Number Sentences': len(sentences),
                          'Total Words': len(rdict),
                          'Total Kanji': len(uniq_kanji),
-                         'Kanji 2+': n2plus,
+                         'Kanji 10+': n10plus,
                          'Kanji 5+': n5plus,
-                         'Kanji 10+': n10plus
+                         'Kanji 2+': n2plus
                          }]
             reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
         else:
@@ -118,9 +118,9 @@ def report_function(booklist):
                          'Number Sentences': len(sentences),
                          'Total Words': len(rdict),
                          'Total Kanji': len(uniq_kanji),
-                         'Kanji 2+': n2plus,
+                         'Kanji 10+': n10plus,
                          'Kanji 5+': n5plus,
-                         'Kanji 10+': n10plus
+                         'Kanji 2+': n2plus
                          }]
             reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
             counterstr = ''
