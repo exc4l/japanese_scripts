@@ -26,7 +26,7 @@ if os.path.isfile(kw_path):
         known_words = file.read()
 
 
-known_words = kana.markup_known_words(known_words)
+known_words = list(kana.markup_known_words(known_words))
 known_kanji = kana.get_unique_kanji(known_words)
 
 subfolders = [ f.name for f in os.scandir(nhkdir) if f.is_dir() and f.name[0] != '$']
@@ -44,7 +44,7 @@ for article in tqdm(subfolders, ascii=True, desc="sorting the articles", ncols=1
         booktml = file.read()
     cleaned_book = kana.markup_book_html(booktml)
     token_words = [word.surface for word in tagger(cleaned_book)]
-    uniq_words = kana.get_unique_token_words(token_words)
+    uniq_words = list(kana.get_unique_token_words(token_words))
     booktml, kanjiwords, lemmawords, unknown_words = kana.mark_known_words_sbl(
         booktml, uniq_words, known_words, tagger, disable=True)
     booktml = kana.mark_kanjiwords(booktml, kanjiwords, known_words, disable=True)
