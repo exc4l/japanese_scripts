@@ -1,6 +1,7 @@
 import os
 import shutil
 import fugashi
+import zipfile
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
@@ -54,14 +55,17 @@ def report_function(booklist):
     if os.path.isfile(f'{reportdir}/{reportname}'):
         lib_df = pd.read_csv(f'{reportdir}/{reportname}', index_col=0)
         OLD_LIB = True
-    for novel in tqdm(booklist[:200], ascii=True, desc='Creating Report'):
-        reportfile = f'{reportdir}/{os.path.basename(novel)}.txt'
+    for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
+        reportfile = f'{reportdir}/{os.path.basename(novel)}.zip'
         if OLD_LIB:
             if lib_df['Name'].isin([os.path.basename(novel)]).any():
                 continue
         if os.path.isfile(reportfile):
-            with open(reportfile, 'r', encoding='utf-8') as file:
-                rtxt = file.read().splitlines()
+            with zipfile.ZipFile(reportfile) as myzip:
+                with myzip.open(f'{os.path.basename(novel)}.txt') as file:
+                    rtxt = file.read().decode('utf-8').splitlines()
+            # with open(reportfile, 'r', encoding='utf-8') as file:
+            #     rtxt = file.read().splitlines()
             rdict = {}
             for line in rtxt:
                 key, value = line.split(',')
@@ -135,6 +139,12 @@ def report_function(booklist):
             with open(f'{reportdir}/{os.path.basename(novel)}.txt',
                       'w', encoding='utf-8') as wr:
                 wr.write(counterstr)
+            with zipfile.ZipFile(f'{reportdir}/{os.path.basename(novel)}.zip',
+                                 'w', zipfile.ZIP_LZMA) as myzip:
+                myzip.write(f'{reportdir}/{os.path.basename(novel)}.txt',
+                            f'{os.path.basename(novel)}.txt')
+            if os.path.exists(f'{reportdir}/{os.path.basename(novel)}.txt'):
+                os.remove(f'{reportdir}/{os.path.basename(novel)}.txt')
     if OLD_LIB:
         lib_df = lib_df.append(reportdf, ignore_index=True, sort=False)
         lib_df.to_csv(f'{reportdir}/{reportname}', index_label='Index')
@@ -152,9 +162,6 @@ def report_function(booklist):
 @click.option('--do-html', '-H',
               is_flag=True,
               help='Process the raw html and apply styling')
-@click.option('--do-kanji', '-K',
-              help='mark known words/kanji in the html',
-              is_flag=True)
 @click.option('--bookdir', '-i',
               type=click.Path(exists=True),
               default='Library',
@@ -164,46 +171,21 @@ def report_function(booklist):
               type=int,
               default=1100,
               help='image height inside the html')
-@click.option('--split',
-              type=int,
-              default=0,
-              help='Split the ebook every N. Recommneded min value: 50')
 @click.option('--report', '-R',
               is_flag=True,
               help=('Creates a report based on unpacked novels. '
                     'Forces do-html.'))
-@click.option('--activate-all', '-A',
-              is_flag=True,
-              help='Activates every flag besides force options.')
-@click.option('--interactive',
-              is_flag=True,
-              help=('Select which books to process. Doesn\'t affect '
-                    'mobi extraction.'))
-def main(extract_mobi, force_mobi, do_html, do_kanji,
-         bookdir, max_img_height, split, report, activate_all, interactive):
-    if activate_all:
-        extract_mobi = True
-        do_html = True
-        do_kanji = True
-        # split = 100
-        report = True
+def main(extract_mobi, force_mobi, do_html,
+         bookdir, max_img_height, report):
 
     if extract_mobi:
         booklist = mobi_processing(bookdir, force_mobi)
     if not force_mobi:
         booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
                     if f.is_dir() and f.name[0] != '$']
-    if interactive:
-        booklist = interactive_selection(booklist)
 
     if do_html or report:
         html_processing(booklist, max_img_height)
-
-    if do_kanji:
-        kanji_processing(booklist)
-
-    if split:
-        split_creation(booklist, split)
 
     if report:
         report_function(booklist)
