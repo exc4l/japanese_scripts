@@ -6,7 +6,6 @@ from tqdm import tqdm
 
 import kanjianalyze as kana
 import html_prep as hpre
-import mobiextract as moex
 
 import click
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
@@ -17,7 +16,7 @@ kw_path = path + '\\.known_words.txt'
 
 
 def mobi_processing(bookdir, force_mobi):
-    booklist = moex.extract_mobi_folder(bookdir, force=force_mobi)
+    booklist = hpre.extract_mobi_folder(bookdir, force=force_mobi)
     return booklist
 
 

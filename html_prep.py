@@ -1,8 +1,12 @@
 from bs4 import BeautifulSoup
 import os
 import math
+import mobi
+from glob import glob
+import shutil
 
-def _remove_all_attrs_except(soup,whitelist):
+
+def _remove_all_attrs_except(soup, whitelist):
     for tag in soup.find_all(True):
         if tag.name not in whitelist:
             tag.attrs = {}
@@ -15,12 +19,14 @@ def strip_tags_and_font(soup, whitelist):
         tag.unwrap()
     return soup
 
-def strip_tag_attrs(soup,whitelist):
+
+def strip_tag_attrs(soup, whitelist):
     for tag in soup.find_all(True):
         if tag.name not in whitelist:
             tag.attrs = {}
     return soup
-    
+
+
 def delete_tags(soup, blacklist):
     for tag in soup.find_all(True):
         if tag.name in blacklist:
@@ -28,26 +34,28 @@ def delete_tags(soup, blacklist):
     return soup
 
 
-def add_style(soup,stylestr):
-    if soup.head == None:
+def add_style(soup, stylestr):
+    if soup.head is None:
         head = soup.new_tag('head')
     else:
         head = soup.head
     head.append(soup.new_tag('style', type='text/css'))
     head.style.append(stylestr)
-    if soup.head == None:
+    if soup.head is None:
         soup.html.insert_after(head)
     return soup
 
+
 def pop_img_width(soup):
     for tag in soup.find_all("img"):
-        if tag.get("width") != None:
+        if tag.get("width") is not None:
             tag.attrs.pop('width')
     return soup
 
+
 def limit_img_height(soup, maxheight):
     for tag in soup.find_all("img"):
-        if tag.get("height") != None:
+        if tag.get("height") is not None:
             if int(tag.get("height")) > maxheight:
                 tag.attrs['height'] = maxheight
     return soup
@@ -132,6 +140,46 @@ a {
  <body>"""
     html_part2 = "</body>"
     return html_part1, html_part2
+
+
+# deleting the booktree if it already exists to ensure that nothing interferes
+def copy_delcopy(from_path, to_path):
+    if os.path.exists(to_path):
+        shutil.rmtree(to_path)
+    shutil.copytree(from_path, to_path)
+
+
+def extract_mobi_folder(bookdir, force=False):
+    # used lists
+    # mobi extracts the mobis into some temp dicts and this list will hold
+    # the paths
+    templist = []
+    # convlist will be holding directionary for after the conversion
+    convlist = []
+
+    # create list of all mobis inside the bookdir
+    mobilist = [
+        f.path for f in os.scandir(bookdir) if f.is_file()
+        and os.path.splitext(f)[1] in ('.mobi',)
+        and not os.path.isdir(os.path.splitext(f)[0])
+        ]
+    if force:
+        mobilist = glob(bookdir+"/*.mobi")
+    # extract the mobis
+    for f in mobilist:
+        tempdir, _ = mobi.extract(f)
+        templist.append(tempdir+"\\mobi7")
+    # dictiorary names after conversion is just the filename
+    # minus the extension
+    for f in mobilist:
+        convlist.append(os.path.splitext(f)[0])
+    # copy over the mobi file structure
+    for i in range(len(templist)):
+        copy_delcopy(templist[i], convlist[i])
+    # clean up
+    for f in templist:
+        shutil.rmtree(os.path.dirname(f))
+    return convlist
 
 
 if __name__ == "__main__":
