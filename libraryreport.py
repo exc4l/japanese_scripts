@@ -115,7 +115,7 @@ def report_function(booklist):
 
             add_data = [{'Name': os.path.basename(novel),
                          'Number Sentences': len(sentences),
-                         'Total Words': len(rdict),
+                         'Total Words': len(token_words),
                          'Total Kanji': len(uniq_kanji),
                          'Kanji 10+': n10plus,
                          'Kanji 5+': n5plus,
