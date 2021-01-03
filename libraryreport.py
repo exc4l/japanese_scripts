@@ -44,14 +44,21 @@ def html_processing(booklist, max_img_height):
 def report_function(booklist):
     from collections import Counter
     import pandas as pd
+    OLD_LIB = False
     tagger = fugashi.Tagger()
     reportdf = pd.DataFrame()
     reportdir = f'{os.path.dirname(booklist[0])}/$_report'
     reportname = '$report.csv'
     if not os.path.isdir(reportdir):
         os.mkdir(reportdir)
+    if os.path.isfile(f'{reportdir}/{reportname}'):
+        lib_df = pd.read_csv(f'{reportdir}/{reportname}', index_col=0)
+        OLD_LIB = True
     for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
         reportfile = f'{reportdir}/{os.path.basename(novel)}.txt'
+        if OLD_LIB:
+            if lib_df['Name'].isin([os.path.basename(novel)]).any():
+                continue
         if os.path.isfile(reportfile):
             with open(reportfile, 'r', encoding='utf-8') as file:
                 rtxt = file.read().splitlines()
@@ -59,13 +66,13 @@ def report_function(booklist):
             for line in rtxt:
                 key, value = line.split(',')
                 rdict[key] = int(value)
-            with open(f"{novel}/{os.path.basename(novel)}.html",
-                      'r', encoding='utf-8') as file:
-                raw_book = file.read()
-            cleaned_book = kana.markup_book_html(raw_book)
-            cleaned_book = kana.reduce_new_lines(cleaned_book)
-            sentences = cleaned_book.split('\n')
-            all_kanji = kana.remove_non_kanji(cleaned_book)
+            # with open(f"{novel}/{os.path.basename(novel)}.html",
+            #           'r', encoding='utf-8') as file:
+            #     raw_book = file.read()
+            # cleaned_book = kana.markup_book_html(raw_book)
+            # cleaned_book = kana.reduce_new_lines(cleaned_book)
+            # sentences = cleaned_book.split('\n')
+            all_kanji = kana.remove_non_kanji(kana.getrdictstring(rdict))
             uniq_kanji = set(all_kanji)
             kanji_counter = Counter(all_kanji)
             # appears at least two times aka 2+ times
@@ -76,7 +83,7 @@ def report_function(booklist):
             n10plus = sum(k >= 10 for k in kanji_counter.values())
 
             add_data = [{'Name': os.path.basename(novel),
-                         'Number Sentences': len(sentences),
+                         'Number Tokens': sum(rdict.values()),
                          'Total Words': len(rdict),
                          'Total Kanji': len(uniq_kanji),
                          'Kanji 10+': n10plus,
@@ -128,7 +135,11 @@ def report_function(booklist):
             with open(f'{reportdir}/{os.path.basename(novel)}.txt',
                       'w', encoding='utf-8') as wr:
                 wr.write(counterstr)
-    reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
+    if OLD_LIB:
+        lib_df = lib_df.append(reportdf, ignore_index=True, sort=False)
+        lib_df.to_csv(f'{reportdir}/{reportname}', index_label='Index')
+    else:
+        reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)

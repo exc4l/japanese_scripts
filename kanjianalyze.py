@@ -113,6 +113,10 @@ def myindex(search_list, value):
     return list_idx
 
 
+def getrdictstring(rdict):
+    return ''.join(k*v for k, v in rdict.items())
+
+
 def contains_lemma(word, known_set, tagger):
     lem = tagger(word)[0].feature.lemma
     if lem is None:
