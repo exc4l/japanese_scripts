@@ -54,7 +54,7 @@ def report_function(booklist):
     if os.path.isfile(f'{reportdir}/{reportname}'):
         lib_df = pd.read_csv(f'{reportdir}/{reportname}', index_col=0)
         OLD_LIB = True
-    for novel in tqdm(booklist, ascii=True, desc='Creating Report'):
+    for novel in tqdm(booklist[:200], ascii=True, desc='Creating Report'):
         reportfile = f'{reportdir}/{os.path.basename(novel)}.txt'
         if OLD_LIB:
             if lib_df['Name'].isin([os.path.basename(novel)]).any():
@@ -109,8 +109,8 @@ def report_function(booklist):
                 sentence_tokens = kana.get_unique_token_words(sentence_tokens)
                 token_extend(sentence_tokens)
             token_counter = Counter(token_words)
+            all_kanji = kana.remove_non_kanji(''.join(token_words))
             token_words = set(token_words)
-            all_kanji = kana.remove_non_kanji(cleaned_book)
             uniq_kanji = set(all_kanji)
             kanji_counter = Counter(all_kanji)
             # appears at least two times aka 2+ times
@@ -121,7 +121,7 @@ def report_function(booklist):
             n10plus = sum(k >= 10 for k in kanji_counter.values())
 
             add_data = [{'Name': os.path.basename(novel),
-                         'Number Sentences': len(sentences),
+                         'Number Tokens': sum(token_counter.values()),
                          'Total Words': len(token_words),
                          'Total Kanji': len(uniq_kanji),
                          'Kanji 10+': n10plus,
