@@ -1,3 +1,5 @@
+# Outdated will update later
+
 # japanese_scripts: A collection of scripts
 
 This repo contains several scripts, that I've written to help me with my language study.
