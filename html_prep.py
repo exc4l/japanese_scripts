@@ -56,7 +56,7 @@ def pop_img_width(soup):
 def limit_img_height(soup, maxheight):
     for tag in soup.find_all("img"):
         if tag.get("height") is not None:
-            if int(tag.get("height")) > maxheight:
+            if int(tag.get("height").strip('%')) > maxheight:
                 tag.attrs['height'] = maxheight
     return soup
 
