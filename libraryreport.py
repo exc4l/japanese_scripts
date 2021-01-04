@@ -73,8 +73,14 @@ def report_function(booklist):
             #     rtxt = file.read().splitlines()
             rdict = {}
             for line in rtxt:
-                key, value = line.split(',')
-                rdict[key] = int(value)
+                try:
+                    key, value = line.split(',')
+                    rdict[key] = int(value)
+                except:
+                    print(line*5)
+                    print(novel)
+                    print('there is something weird here')
+                    exit()
             # with open(f"{novel}/{os.path.basename(novel)}.html",
             #           'r', encoding='utf-8') as file:
             #     raw_book = file.read()
