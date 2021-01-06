@@ -8,6 +8,8 @@ Kanjigrid*.png
 LNs/
 Library/*
 !Library/$_report
+SRT/*
+!SRT/$_report
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
