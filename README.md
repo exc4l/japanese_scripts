@@ -1,5 +1,21 @@
 # Outdated will update later
 
+
+# Todo
+
+1. There is a lot of dupliate code
+2. The cli is overloaded and feels unnatural to use
+3. Novelmaker and libraryreport could probl be one
+4. Git gud
+5. Code is trash
+6. Formatting is trash and inconsistent (I plan to introduce black to combat my mental shortcomings)
+7. I manipulate a lot of paths and still don't use Pathlib
+8. How I filter special chars etc is questionable at best and very dependent on me having encountered the special char beforehand
+9. Use the filter function when filtering
+10. Config.ini or something might be nice like the paths are normally set and don't need to be set everytime via the cli
+11. Repo size is 500mb just because I wanted to add the tokenization results. That seems a bit unneccesary.
+12. Git gud
+
 # japanese_scripts: A collection of scripts
 
 This repo contains several scripts, that I've written to help me with my language study.

@@ -4,7 +4,7 @@ import fugashi
 import zipfile
 from bs4 import BeautifulSoup
 from tqdm import tqdm
-
+from collections import Counter
 import kanjianalyze as kana
 import html_prep as hpre
 
@@ -14,6 +14,20 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], show_default=True)
 __loc__ = os.path.abspath('')
 path = __loc__ + '\\resources'
 kw_path = path + '\\.known_words.txt'
+
+
+def get_rdict(reportxt):
+    rdict = {}
+    for line in reportxt:
+        try:
+            key, value = line.split(',')
+            rdict[key] = int(value)
+        except:
+            print(line*5)
+            print(subf)
+            print('there is something weird here')
+            exit()
+    return rdict
 
 
 def mobi_processing(bookdir, force_mobi):
@@ -71,16 +85,7 @@ def report_function(booklist):
                     rtxt = file.read().decode('utf-8').splitlines()
             # with open(reportfile, 'r', encoding='utf-8') as file:
             #     rtxt = file.read().splitlines()
-            rdict = {}
-            for line in rtxt:
-                try:
-                    key, value = line.split(',')
-                    rdict[key] = int(value)
-                except:
-                    print(line*5)
-                    print(novel)
-                    print('there is something weird here')
-                    exit()
+            rdict = get_rdict(rtxt)
             # with open(f"{novel}/{os.path.basename(novel)}.html",
             #           'r', encoding='utf-8') as file:
             #     raw_book = file.read()
@@ -165,7 +170,6 @@ def report_function(booklist):
 
 def srt_processing(subtitledir, reportdir=None):
     import srt
-    from collections import Counter
     import pandas as pd
     OLD_LIB = False
     tagger = fugashi.Tagger()
@@ -197,16 +201,7 @@ def srt_processing(subtitledir, reportdir=None):
                     rtxt = file.read().decode('utf-8').splitlines()
             # with open(reportfile, 'r', encoding='utf-8') as file:
             #     rtxt = file.read().splitlines()
-            rdict = {}
-            for line in rtxt:
-                try:
-                    key, value = line.split(',')
-                    rdict[key] = int(value)
-                except:
-                    print(line*5)
-                    print(subf)
-                    print('there is something weird here')
-                    exit()
+            rdict = get_rdict(rtxt)
             all_kanji = kana.remove_non_kanji(kana.getrdictstring(rdict))
             uniq_kanji = set(all_kanji)
             kanji_counter = Counter(all_kanji)
@@ -289,16 +284,7 @@ def srt_processing(subtitledir, reportdir=None):
                     rtxt = file.read().decode('utf-8').splitlines()
             # with open(reportfile, 'r', encoding='utf-8') as file:
             #     rtxt = file.read().splitlines()
-            rdict = {}
-            for line in rtxt:
-                try:
-                    key, value = line.split(',')
-                    rdict[key] = int(value)
-                except:
-                    print(line*5)
-                    print(subf)
-                    print('there is something weird here')
-                    exit()
+            rdict = get_rdict(rtxt)
             all_kanji = kana.remove_non_kanji(kana.getrdictstring(rdict))
             uniq_kanji = set(all_kanji)
             kanji_counter = Counter(all_kanji)
@@ -374,6 +360,54 @@ def srt_processing(subtitledir, reportdir=None):
         reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
 
 
+def personal_report(bookdir, subsdir):
+    bookset = {f.name for f in os.scandir(bookdir)
+               if f.is_dir() and f.name[0] != '$'
+               and os.path.isfile(f'{bookdir}/{f.name}/read.txt')}
+    readlist = [f.path for f in os.scandir(f"{bookdir}/$_report")
+                if os.path.splitext(f.name)[0] in bookset]
+    sublist = [f.path for f in os.scandir(f"{subsdir}/$_report")
+               if f.name[0] != "$"]
+    total_counter = Counter()
+    reference_dict = dict()
+    for subf in sublist:
+        if os.path.isfile(subf):
+            subfname = f'{os.path.splitext(os.path.basename(subf))[0]}.txt'
+            with zipfile.ZipFile(subf) as myzip:
+                with myzip.open(subfname) as file:
+                    rtxt = file.read().decode('utf-8').splitlines()
+            rdict = get_rdict(rtxt)
+            total_counter += Counter(rdict)
+            for key in rdict.keys():
+                if key in reference_dict:
+                    reference_dict[key] += f', {subfname}'
+                else:
+                    reference_dict[key] = subfname
+    for book in readlist:
+        if os.path.isfile(book):
+            with open(book, 'r', encoding='utf-8') as file:
+                rtxt = file.read().splitlines()
+            rdict = get_rdict(rtxt)
+            total_counter += Counter(rdict)
+            for key in rdict.keys():
+                if key in reference_dict:
+                    reference_dict[key] += f', {os.path.basename(book)}'
+                else:
+                    reference_dict[key] = f'{os.path.basename(book)}'
+    if os.path.isfile(kw_path):
+        with open(kw_path, 'r', encoding="utf-8") as file:
+            known_words = file.read()
+        known_words = kana.markup_known_words(known_words)
+    else:
+        known_words = set()
+    counterstr = ""
+    for k, v in total_counter.most_common():
+        if k not in known_words:
+            counterstr += f'{k}, {v}, {reference_dict[k]}\n'
+    with open('$PersonalReport.csv', 'w', encoding='utf-8') as wr:
+        wr.write(counterstr)
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--extract-mobi', '-M',
               is_flag=True,
@@ -405,9 +439,12 @@ def srt_processing(subtitledir, reportdir=None):
               default='SRT',
               help='the dictionary which contains the sub files'
               )
+@click.option('--pr',
+              is_flag=True,
+              help=('Activates personal report mode'))
 def main(extract_mobi, force_mobi, do_html,
-         bookdir, max_img_height, report, srt, subsdir):
-    if srt:
+         bookdir, max_img_height, report, srt, subsdir, pr):
+    if srt or pr:
         srt_processing(subsdir)
     else:
         if extract_mobi:
@@ -421,6 +458,8 @@ def main(extract_mobi, force_mobi, do_html,
 
         if report:
             report_function(booklist)
+    if pr:
+        personal_report('LNs', subsdir)
 
 
 if __name__ == '__main__':

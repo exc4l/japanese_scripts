@@ -9,7 +9,7 @@ LNs/
 Library/*
 !Library/$_report
 SRT/*
-!SRT/$_report
+!SRT/$_report/$report.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
