@@ -163,6 +163,217 @@ def report_function(booklist):
         reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
 
 
+def srt_processing(subtitledir, reportdir=None):
+    import srt
+    from collections import Counter
+    import pandas as pd
+    OLD_LIB = False
+    tagger = fugashi.Tagger()
+    reportdf = pd.DataFrame()
+    if reportdir is None:
+        reportdir = f'{subtitledir}/$_report'
+    reportname = '$report.csv'
+    if not os.path.isdir(reportdir):
+        os.mkdir(reportdir)
+    if os.path.isfile(f'{reportdir}/{reportname}'):
+        lib_df = pd.read_csv(f'{reportdir}/{reportname}', index_col=0)
+        OLD_LIB = True
+    srtdirs = [f'{subtitledir}/{f.name}' for f in os.scandir(subtitledir)
+               if f.is_dir() and f.name[0] != '$']
+    srtfiles = [f'{subtitledir}/{f.name}' for f in os.scandir(subtitledir)
+                if f.is_file() and f.name[0] != '$']
+    for subdir in tqdm(srtdirs, ascii=True, desc='Creating Directory Report'):
+        reportfile = f'{reportdir}/{os.path.basename(subdir)}.zip'
+        if OLD_LIB:
+            if lib_df['Name'].isin([os.path.basename(subdir)]).any():
+                continue
+
+        subsrtfiles = [f'{subdir}/{f.name}' for f in os.scandir(subdir)
+                       if f.is_file() and f.name[0] != '$']
+
+        if os.path.isfile(reportfile):
+            with zipfile.ZipFile(reportfile) as myzip:
+                with myzip.open(f'{os.path.basename(subdir)}.txt') as file:
+                    rtxt = file.read().decode('utf-8').splitlines()
+            # with open(reportfile, 'r', encoding='utf-8') as file:
+            #     rtxt = file.read().splitlines()
+            rdict = {}
+            for line in rtxt:
+                try:
+                    key, value = line.split(',')
+                    rdict[key] = int(value)
+                except:
+                    print(line*5)
+                    print(subf)
+                    print('there is something weird here')
+                    exit()
+            all_kanji = kana.remove_non_kanji(kana.getrdictstring(rdict))
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
+            add_data = [{'Name': os.path.basename(subdir),
+                         'Number Tokens': sum(rdict.values()),
+                         'Total Words': len(rdict),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 10+': n10plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 2+': n2plus
+                         }]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+        else:
+            subsrtfiles = [f'{subdir}/{f.name}' for f in os.scandir(subdir)
+                           if f.is_file() and f.name[0] != '$']
+            concatsubs = ""
+            for subf in subsrtfiles:
+                with open(f"{subf}", 'r', encoding='utf-8') as file:
+                    concatsubs += file.read()
+            sub_gen = srt.parse(concatsubs)
+            subs = list(sub_gen)
+            token_words = []
+            token_extend = token_words.extend
+            for sen in subs:
+                sentence_tokens = [word.feature.lemma if word.feature.lemma
+                                   else word.surface for word in tagger(sen.content)]
+                sentence_tokens = [kana.clean_lemma(token) for token
+                                   in sentence_tokens
+                                   if not kana.is_single_kana(token)]
+                sentence_tokens = kana.get_unique_token_words(sentence_tokens)
+                token_extend(sentence_tokens)
+            token_counter = Counter(token_words)
+            all_kanji = kana.remove_non_kanji(''.join(token_words))
+            uni_token_words = set(token_words)
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
+            add_data = [{'Name': os.path.basename(subdir),
+                         'Number Tokens': sum(token_counter.values()),
+                         'Total Words': len(uni_token_words),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 10+': n10plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 2+': n2plus
+                         }]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+            counterstr = ''
+            for k, v in token_counter.most_common():
+                counterstr += f'{k}, {v}\n'
+            with open(f'{reportdir}/{os.path.basename(subdir)}.txt',
+                      'w', encoding='utf-8') as wr:
+                wr.write(counterstr)
+            with zipfile.ZipFile(f'{reportdir}/{os.path.basename(subdir)}.zip',
+                                 'w', zipfile.ZIP_LZMA) as myzip:
+                myzip.write(f'{reportdir}/{os.path.basename(subdir)}.txt',
+                            f'{os.path.basename(subdir)}.txt')
+            if os.path.exists(f'{reportdir}/{os.path.basename(subdir)}.txt'):
+                os.remove(f'{reportdir}/{os.path.basename(subdir)}.txt')
+    for subf in tqdm(srtfiles, ascii=True, desc='Creating File Report'):
+        reportfile = f'{reportdir}/{os.path.basename(subf)}.zip'
+        if OLD_LIB:
+            if lib_df['Name'].isin([os.path.basename(subf)]).any():
+                continue
+        if os.path.isfile(reportfile):
+            with zipfile.ZipFile(reportfile) as myzip:
+                with myzip.open(f'{os.path.basename(subf)}.txt') as file:
+                    rtxt = file.read().decode('utf-8').splitlines()
+            # with open(reportfile, 'r', encoding='utf-8') as file:
+            #     rtxt = file.read().splitlines()
+            rdict = {}
+            for line in rtxt:
+                try:
+                    key, value = line.split(',')
+                    rdict[key] = int(value)
+                except:
+                    print(line*5)
+                    print(subf)
+                    print('there is something weird here')
+                    exit()
+            all_kanji = kana.remove_non_kanji(kana.getrdictstring(rdict))
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
+            add_data = [{'Name': os.path.basename(subf),
+                         'Number Tokens': sum(rdict.values()),
+                         'Total Words': len(rdict),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 10+': n10plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 2+': n2plus
+                         }]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+        else:
+            with open(f"{subf}",
+                      'r', encoding='utf-8') as file:
+                subtitle = file.read()
+            sub_gen = srt.parse(subtitle)
+            subs = list(sub_gen)
+            token_words = []
+            token_extend = token_words.extend
+            for sen in subs:
+                sentence_tokens = [word.feature.lemma if word.feature.lemma
+                                   else word.surface for word in tagger(sen.content)]
+                sentence_tokens = [kana.clean_lemma(token) for token
+                                   in sentence_tokens
+                                   if not kana.is_single_kana(token)]
+                sentence_tokens = kana.get_unique_token_words(sentence_tokens)
+                token_extend(sentence_tokens)
+            token_counter = Counter(token_words)
+            all_kanji = kana.remove_non_kanji(''.join(token_words))
+            uni_token_words = set(token_words)
+            uniq_kanji = set(all_kanji)
+            kanji_counter = Counter(all_kanji)
+            # appears at least two times aka 2+ times
+            n2plus = sum(k >= 2 for k in kanji_counter.values())
+            # appears at least 5 times aka 5+ times
+            n5plus = sum(k >= 5 for k in kanji_counter.values())
+            # appears at least 10 times aka 10+ times
+            n10plus = sum(k >= 10 for k in kanji_counter.values())
+
+            add_data = [{'Name': os.path.basename(subf),
+                         'Number Tokens': sum(token_counter.values()),
+                         'Total Words': len(uni_token_words),
+                         'Total Kanji': len(uniq_kanji),
+                         'Kanji 10+': n10plus,
+                         'Kanji 5+': n5plus,
+                         'Kanji 2+': n2plus
+                         }]
+            reportdf = reportdf.append(add_data, ignore_index=True, sort=False)
+            counterstr = ''
+            for k, v in token_counter.most_common():
+                counterstr += f'{k}, {v}\n'
+            with open(f'{reportdir}/{os.path.basename(subf)}.txt',
+                      'w', encoding='utf-8') as wr:
+                wr.write(counterstr)
+            with zipfile.ZipFile(f'{reportdir}/{os.path.basename(subf)}.zip',
+                                 'w', zipfile.ZIP_LZMA) as myzip:
+                myzip.write(f'{reportdir}/{os.path.basename(subf)}.txt',
+                            f'{os.path.basename(subf)}.txt')
+            if os.path.exists(f'{reportdir}/{os.path.basename(subf)}.txt'):
+                os.remove(f'{reportdir}/{os.path.basename(subf)}.txt')
+    if OLD_LIB:
+        lib_df = lib_df.append(reportdf, ignore_index=True, sort=False)
+        lib_df.to_csv(f'{reportdir}/{reportname}', index_label='Index')
+    else:
+        reportdf.to_csv(f'{reportdir}/{reportname}', index_label='Index')
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--extract-mobi', '-M',
               is_flag=True,
@@ -186,20 +397,30 @@ def report_function(booklist):
               is_flag=True,
               help=('Creates a report based on unpacked novels. '
                     'Forces do-html.'))
+@click.option('--srt',
+              is_flag=True,
+              help=('Activates SRT mode with SRT/ as standard folder'))
+@click.option('--subsdir',
+              type=click.Path(exists=True),
+              default='SRT',
+              help='the dictionary which contains the sub files'
+              )
 def main(extract_mobi, force_mobi, do_html,
-         bookdir, max_img_height, report):
+         bookdir, max_img_height, report, srt, subsdir):
+    if srt:
+        srt_processing(subsdir)
+    else:
+        if extract_mobi:
+            booklist = mobi_processing(bookdir, force_mobi)
+        if not force_mobi:
+            booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
+                        if f.is_dir() and f.name[0] != '$']
 
-    if extract_mobi:
-        booklist = mobi_processing(bookdir, force_mobi)
-    if not force_mobi:
-        booklist = [f'{bookdir}/{f.name}' for f in os.scandir(bookdir)
-                    if f.is_dir() and f.name[0] != '$']
+        if do_html or report:
+            html_processing(booklist, max_img_height)
 
-    if do_html or report:
-        html_processing(booklist, max_img_height)
-
-    if report:
-        report_function(booklist)
+        if report:
+            report_function(booklist)
 
 
 if __name__ == '__main__':

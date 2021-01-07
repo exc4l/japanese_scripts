@@ -173,9 +173,9 @@ def get_unique_kanji(words):
 
 
 def get_unique_token_words(token_words):
-    uniq = [i for i in token_words if i and i not in allcharset]
+    uniq = {i for i in token_words if i and i not in allcharset and not i.isnumeric()}
     # uniq = [i for i in token_words if i not in allcharset]
-    return set(uniq)
+    return uniq
 
 
 def get_unknown_words(uniq_words, known_words, tagger):
