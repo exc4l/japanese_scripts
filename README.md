@@ -8,7 +8,6 @@
 3. Novelmaker and libraryreport could probl be one
 4. Git gud
 5. Code is trash due to be just learning how to code
-6. Formatting is trash and inconsistent (I plan to introduce black)
 7. I manipulate a lot of paths and still don't use Pathlib
 8. How I filter special chars etc is questionable at best and very dependent on me having encountered the special char beforehand
 9. Use the filter function when filtering

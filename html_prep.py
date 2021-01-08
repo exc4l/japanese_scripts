@@ -30,16 +30,16 @@ def strip_tag_attrs(soup, whitelist):
 def delete_tags(soup, blacklist):
     for tag in soup.find_all(True):
         if tag.name in blacklist:
-            tag.replaceWith('')
+            tag.replaceWith("")
     return soup
 
 
 def add_style(soup, stylestr):
     if soup.head is None:
-        head = soup.new_tag('head')
+        head = soup.new_tag("head")
     else:
         head = soup.head
-    head.append(soup.new_tag('style', type='text/css'))
+    head.append(soup.new_tag("style", type="text/css"))
     head.style.append(stylestr)
     if soup.head is None:
         soup.html.insert_after(head)
@@ -49,29 +49,29 @@ def add_style(soup, stylestr):
 def pop_img_width(soup):
     for tag in soup.find_all("img"):
         if tag.get("width") is not None:
-            tag.attrs.pop('width')
+            tag.attrs.pop("width")
     return soup
 
 
 def limit_img_height(soup, maxheight):
     for tag in soup.find_all("img"):
         if tag.get("height") is not None:
-            if int(tag.get("height").strip('%')) > maxheight:
-                tag.attrs['height'] = maxheight
+            if int(tag.get("height").strip("%")) > maxheight:
+                tag.attrs["height"] = maxheight
     return soup
 
 
 def get_splits(raw_book, splits):
-    soup = BeautifulSoup(raw_book, 'lxml')
-    ptags = soup.find_all('p')
+    soup = BeautifulSoup(raw_book, "lxml")
+    ptags = soup.find_all("p")
     split_size = splits
-    sections = math.ceil(len(ptags)/split_size)
+    sections = math.ceil(len(ptags) / split_size)
     pages = []
     for sec in range(sections):
-        temp_page = ''
+        temp_page = ""
         for i in range(split_size):
-            if (sec*split_size)+i < len(ptags):
-                temp_page += str(ptags[(sec*split_size)+i]).replace('\n', '')
+            if (sec * split_size) + i < len(ptags):
+                temp_page += str(ptags[(sec * split_size) + i]).replace("\n", "")
         pages.append(temp_page)
     return pages
 
@@ -159,16 +159,18 @@ def extract_mobi_folder(bookdir, force=False):
 
     # create list of all mobis inside the bookdir
     mobilist = [
-        f.path for f in os.scandir(bookdir) if f.is_file()
-        and os.path.splitext(f)[1] in ('.mobi',)
+        f.path
+        for f in os.scandir(bookdir)
+        if f.is_file()
+        and os.path.splitext(f)[1] in (".mobi",)
         and not os.path.isdir(os.path.splitext(f)[0])
-        ]
+    ]
     if force:
-        mobilist = glob(bookdir+"/*.mobi")
+        mobilist = glob(bookdir + "/*.mobi")
     # extract the mobis
     for f in mobilist:
         tempdir, _ = mobi.extract(f)
-        templist.append(tempdir+"\\mobi7")
+        templist.append(tempdir + "\\mobi7")
     # dictiorary names after conversion is just the filename
     # minus the extension
     for f in mobilist:

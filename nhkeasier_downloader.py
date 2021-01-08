@@ -9,41 +9,46 @@ from tqdm import tqdm
 
 DO_KANJI_ANALYZE = False
 
-nhkdir = '.\\nhkeasier_archive'
+nhkdir = ".\\nhkeasier_archive"
 
 starting_story = 1
 # determine latest story automatically
-#end_story = 4287
-response = requests.get('https://nhkeasier.com/')
-soup = BeautifulSoup(response.text, 'lxml')
-latest = soup.find('a', {'class': 'permalink'})
-end_story = int(latest.get('href')[-5:-1])
+# end_story = 4287
+response = requests.get("https://nhkeasier.com/")
+soup = BeautifulSoup(response.text, "lxml")
+latest = soup.find("a", {"class": "permalink"})
+end_story = int(latest.get("href")[-5:-1])
 
 nhkeasy_prefix = "https://nhkeasier.com/story/"
-story_dir_prefix = '\\Story_'
+story_dir_prefix = "\\Story_"
 
-__loc__ = os.path.abspath('')
-path = __loc__+'\\resources'
+__loc__ = os.path.abspath("")
+path = __loc__ + "\\resources"
 
-whitelist = ['a', 'img', 'meta', 'audio']
-blacklist=['div','script','li','nav','ul','time','rt','label','meta','td']
+whitelist = ["a", "img", "meta", "audio"]
+blacklist = ["div", "script", "li", "nav", "ul", "time", "rt", "label", "meta", "td"]
 
 
-results=[]
-futures_list=[]
+results = []
+futures_list = []
 stories_to_load = []
 # this could be a list comp
 # for story_idx in range(starting_story,end_story+1):
 #   if not os.path.isdir(nhkdir+story_dir_prefix+str(story_idx)):
 #       stories_to_load.append(story_idx)
-stories_to_load = [story_idx for story_idx in range(starting_story, end_story+1) if not os.path.isdir(nhkdir+story_dir_prefix+str(story_idx))]
+stories_to_load = [
+    story_idx
+    for story_idx in range(starting_story, end_story + 1)
+    if not os.path.isdir(nhkdir + story_dir_prefix + str(story_idx))
+]
 
 # stories_to_load = [4150,4151,4152]
 
-def download_story(story):
-    response = requests.get(nhkeasy_prefix+str(story))
 
-    soup = BeautifulSoup(response.text, 'lxml')
+def download_story(story):
+    response = requests.get(nhkeasy_prefix + str(story))
+
+    soup = BeautifulSoup(response.text, "lxml")
     soup = hpre.delete_tags(soup, blacklist)
     soup = hpre.strip_tags_and_font(soup, whitelist)
     for tag in soup.find_all("ruby"):
@@ -51,32 +56,34 @@ def download_story(story):
     soup = hpre.pop_img_width(soup)
 
     for tag in soup.find_all("img"):
-        if tag.get('alt') == 'Story illustration':
-            locsrc = tag.get('src')
-            tag.attrs['src'] = 'https://nhkeasier.com' +locsrc
-        elif tag.get('title') == None:
+        if tag.get("alt") == "Story illustration":
+            locsrc = tag.get("src")
+            tag.attrs["src"] = "https://nhkeasier.com" + locsrc
+        elif tag.get("title") == None:
             pass
-        elif "furigana" in tag.get('title'):
-            tag.replaceWith('')
+        elif "furigana" in tag.get("title"):
+            tag.replaceWith("")
 
     for tag in soup.find_all("audio"):
-        test = tag.get('src')
-        tag.attrs['src'] = 'https://nhkeasier.com' +test
-        tag.attrs['preload'] = 'auto'
+        test = tag.get("src")
+        tag.attrs["src"] = "https://nhkeasier.com" + test
+        tag.attrs["preload"] = "auto"
 
-    for tag in soup.findAll('p'):
-        tag.string = tag.text.replace(' ','')
+    for tag in soup.findAll("p"):
+        tag.string = tag.text.replace(" ", "")
 
-    teststr=soup.prettify()
-    teststr=teststr.replace('\n','')
-    teststr=teststr.replace('     ','')
-    teststr=teststr.replace('<h1>    <a href="/">NHK News WebEasier    </a>   </h1>', 
-                            '<h2>    <a href="https://nhkeasier.com/">NHK News WebEasier    </a>   </h2>')
-    teststr=teststr.replace('<h2>    Single Story   </h2>','')
-    teststr=teststr.replace('<link/>','')
+    teststr = soup.prettify()
+    teststr = teststr.replace("\n", "")
+    teststr = teststr.replace("     ", "")
+    teststr = teststr.replace(
+        '<h1>    <a href="/">NHK News WebEasier    </a>   </h1>',
+        '<h2>    <a href="https://nhkeasier.com/">NHK News WebEasier    </a>   </h2>',
+    )
+    teststr = teststr.replace("<h2>    Single Story   </h2>", "")
+    teststr = teststr.replace("<link/>", "")
 
-    soup = BeautifulSoup(teststr, 'lxml')
-    with open(path+"\\styling.txt", 'r', encoding="utf-8") as file:
+    soup = BeautifulSoup(teststr, "lxml")
+    with open(path + "\\styling.txt", "r", encoding="utf-8") as file:
         styletag = file.read()
     soup = hpre.add_style(soup, styletag)
     try:
@@ -85,21 +92,23 @@ def download_story(story):
         pass
     # change this
     # archive/story_xxxx is better
-    os.mkdir(nhkdir+story_dir_prefix+str(story))
-    with open(nhkdir+story_dir_prefix+str(story)+"\\story.html", 'w', encoding='utf-8') as wr:
+    os.mkdir(nhkdir + story_dir_prefix + str(story))
+    with open(
+        nhkdir + story_dir_prefix + str(story) + "\\story.html", "w", encoding="utf-8"
+    ) as wr:
         wr.write(soup.prettify())
 
     if DO_KANJI_ANALYZE:
-        path_ankipanda = os.path.expanduser('~')+'\\ankipandas_words.txt'
+        path_ankipanda = os.path.expanduser("~") + "\\ankipandas_words.txt"
         if os.path.isfile(path_ankipanda):
-            with open(path_ankipanda, 'r', encoding="utf-8") as file:
+            with open(path_ankipanda, "r", encoding="utf-8") as file:
                 known_words = file.read()
         else:
-            with open('known_words.txt', 'r', encoding="utf-8") as file:
+            with open("known_words.txt", "r", encoding="utf-8") as file:
                 known_words = file.read()
-        with open('known_supplement.txt', 'r', encoding="utf-8") as file:
+        with open("known_supplement.txt", "r", encoding="utf-8") as file:
             known_words2 = file.read()
-        known_words= known_words+'\n'+known_words2
+        known_words = known_words + "\n" + known_words2
 
         tagger = fugashi.Tagger()
 
@@ -111,7 +120,8 @@ def download_story(story):
         token_words = [word.surface for word in tagger(cleaned_book)]
         uniq_words = kana.get_unique_token_words(token_words)
         booktml, kanjiwords, lemmawords, unknown_words = kana.mark_known_words_sbl(
-            booktml, uniq_words, known_words, tagger)
+            booktml, uniq_words, known_words, tagger
+        )
         booktml = kana.mark_kanjiwords(booktml, kanjiwords, known_words)
         booktml = kana.mark_lemmawords(booktml, lemmawords, known_words)
         booktml = kana.mark_known_kanji(booktml, known_kanji)
@@ -120,15 +130,28 @@ def download_story(story):
         unknown_kanji = uniq_kanji.difference(known_kanji)
         booktml = kana.mark_unknown_kanji(booktml, unknown_kanji)
 
-        with open(nhkdir+story_dir_prefix+str(story)+"\\story_marked.html", "w", encoding="utf-8") as wr:
+        with open(
+            nhkdir + story_dir_prefix + str(story) + "\\story_marked.html",
+            "w",
+            encoding="utf-8",
+        ) as wr:
             wr.write(booktml)
         freq_list, unknown_freq_list = kana.get_freq_lists(token_words, unknown_words)
-        with open(nhkdir+story_dir_prefix+str(story)+"\\story_freq.txt", "w", encoding="utf-8") as wr:
-            for w,f in freq_list:
+        with open(
+            nhkdir + story_dir_prefix + str(story) + "\\story_freq.txt",
+            "w",
+            encoding="utf-8",
+        ) as wr:
+            for w, f in freq_list:
                 wr.write(f"{w}, {f}\n")
-        with open(nhkdir+story_dir_prefix+str(story)+"\\story_unknown_freq.txt", "w", encoding="utf-8") as wr:
-            for w,f in unknown_freq_list:
+        with open(
+            nhkdir + story_dir_prefix + str(story) + "\\story_unknown_freq.txt",
+            "w",
+            encoding="utf-8",
+        ) as wr:
+            for w, f in unknown_freq_list:
                 wr.write(f"{w}, {f}\n")
+
 
 # print(stories_to_load)
 def main():
@@ -150,5 +173,7 @@ def main():
     #             results.append(None)
     for story in tqdm(stories_to_load):
         download_story(story)
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

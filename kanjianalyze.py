@@ -9,51 +9,223 @@ alphawide = "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖ�
 
 alphabettrans = str.maketrans("", "", alphastring + alphawide)
 
-hiragana = ("あえいおうかけきこくさしすせそたちつてとなにぬねのはひふへほ"
-            "まみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづ"
-            "でどばびぶべぼぱぴぷぺぽゃょゅっぁぃぉぅぇゎゝゐゑゔ")
+hiragana = (
+    "あえいおうかけきこくさしすせそたちつてとなにぬねのはひふへほ"
+    "まみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづ"
+    "でどばびぶべぼぱぴぷぺぽゃょゅっぁぃぉぅぇゎゝゐゑゔ"
+)
 
 hiraganatrans = str.maketrans("", "", hiragana)
 
-katakana = ("アエイオウカケキコクサシスセソタチツテトナニヌネノハヒフヘホ"
-            "マミムメモヤユヨラリルレロワヲウンガギグゲゴザジズゼゾダヂヅ"
-            "デドバビブベボパピプペポょャュィョェァォッーゥヮヴヵヶﾘｫｶｯｮｼｵﾌｷﾏﾉﾀ")
+katakana = (
+    "アエイオウカケキコクサシスセソタチツテトナニヌネノハヒフヘホ"
+    "マミムメモヤユヨラリルレロワヲウンガギグゲゴザジズゼゾダヂヅ"
+    "デドバビブベボパピプペポょャュィョェァォッーゥヮヴヵヶﾘｫｶｯｮｼｵﾌｷﾏﾉﾀ"
+)
 
-kanaset = set(katakana+hiragana)
+kanaset = set(katakana + hiragana)
 
-specialchars = ['\u3000', '、', '。', '《', '》', '！', '「', '」', '[', ']', '；',
-                '&', '-', '/', '\'', '（', '）', '=', '↓', '♯', '┃', '⊗', '∞',
-                '\"', '?', '◎', '-', '+', '】', '◆', '○', '×', '<', '>', '”',
-                '』', '.', '△', '？', '!', '☆', '・', '〇', '『', '…', '｜', '∵',
-                '～', '【', '―', "…", '">', '="', ' ', '="/.">', '⑰', '㎝', '㎜',
-                '◯', '‥', '♥', '*', ';', ':', '{', '}', '#', '%', '●', '■',
-                '─', '〝', '〟', '〟', '：', r'\)', r'\(', ',', '／', '］',
-                '［', '|', '_', '％', '＜', '＞', 'ω', '＠', '＄', 'Ⓒ', '｀'
-                '．', '℃', '−', '\xa0', '\r', '※', '→', '＆', '〈', '〉', '＝',
-                '｟', '－', '©', '＊', '③', '②', '①', '④', '＋', '†', 'ε', '`'
-                '□', '｝', '〜', '，', '★', '｠', '‥', '〕', '㎝', '◇', '⑰', '♫',
-                '㎜', '▽', '←', '＃', '‐', 'Ⅲ', '@', '⑤', '⑥', '♡', '♦', '⑧',
-                '〔', '♥', '◆', 'α', 'γ', '÷', '㎞', '±', 'Ⅰ', '♪', '◯', '—',
-                '^', 'ﾞ', '“', 'т', '$', '⑨', 'φ', '\u200b', '∋', '♂', '￣',
-                '\u2029', '⑦', '▲', '⑩', '∴', '’', '·', '∀', '♣', '´', 'θ',
-                '㏄', '㎏', '¸', '♀', 'μ', '♠', '‘', 'м', '§', '〼', '━', 'æ',
-                '＿', '゛', 'Σ', '�', 'Φ', '￼', '⁉', '⇒', '。 ', '｣', '｢', '） ',
-                '！', '･']
+specialchars = [
+    "\u3000",
+    "、",
+    "。",
+    "《",
+    "》",
+    "！",
+    "「",
+    "」",
+    "[",
+    "]",
+    "；",
+    "&",
+    "-",
+    "/",
+    "'",
+    "（",
+    "）",
+    "=",
+    "↓",
+    "♯",
+    "┃",
+    "⊗",
+    "∞",
+    '"',
+    "?",
+    "◎",
+    "-",
+    "+",
+    "】",
+    "◆",
+    "○",
+    "×",
+    "<",
+    ">",
+    "”",
+    "』",
+    ".",
+    "△",
+    "？",
+    "!",
+    "☆",
+    "・",
+    "〇",
+    "『",
+    "…",
+    "｜",
+    "∵",
+    "～",
+    "【",
+    "―",
+    "…",
+    '">',
+    '="',
+    " ",
+    '="/.">',
+    "⑰",
+    "㎝",
+    "㎜",
+    "◯",
+    "‥",
+    "♥",
+    "*",
+    ";",
+    ":",
+    "{",
+    "}",
+    "#",
+    "%",
+    "●",
+    "■",
+    "─",
+    "〝",
+    "〟",
+    "〟",
+    "：",
+    r"\)",
+    r"\(",
+    ",",
+    "／",
+    "］",
+    "［",
+    "|",
+    "_",
+    "％",
+    "＜",
+    "＞",
+    "ω",
+    "＠",
+    "＄",
+    "Ⓒ",
+    "｀" "．",
+    "℃",
+    "−",
+    "\xa0",
+    "\r",
+    "※",
+    "→",
+    "＆",
+    "〈",
+    "〉",
+    "＝",
+    "｟",
+    "－",
+    "©",
+    "＊",
+    "③",
+    "②",
+    "①",
+    "④",
+    "＋",
+    "†",
+    "ε",
+    "`" "□",
+    "｝",
+    "〜",
+    "，",
+    "★",
+    "｠",
+    "‥",
+    "〕",
+    "㎝",
+    "◇",
+    "⑰",
+    "♫",
+    "㎜",
+    "▽",
+    "←",
+    "＃",
+    "‐",
+    "Ⅲ",
+    "@",
+    "⑤",
+    "⑥",
+    "♡",
+    "♦",
+    "⑧",
+    "〔",
+    "♥",
+    "◆",
+    "α",
+    "γ",
+    "÷",
+    "㎞",
+    "±",
+    "Ⅰ",
+    "♪",
+    "◯",
+    "—",
+    "^",
+    "ﾞ",
+    "“",
+    "т",
+    "$",
+    "⑨",
+    "φ",
+    "\u200b",
+    "∋",
+    "♂",
+    "￣",
+    "\u2029",
+    "⑦",
+    "▲",
+    "⑩",
+    "∴",
+    "’",
+    "·",
+    "∀",
+    "♣",
+    "´",
+    "θ",
+    "㏄",
+    "㎏",
+    "¸",
+    "♀",
+    "μ",
+    "♠",
+    "‘",
+    "м",
+    "§",
+    "〼",
+    "━",
+    "æ",
+    "＿",
+    "゛",
+    "Σ",
+    "�",
+    "Φ",
+    "￼",
+    "⁉",
+    "⇒",
+    "。 ",
+    "｣",
+    "｢",
+    "） ",
+    "！",
+    "･",
+]
 
 
-sentencemarker = ['。',
-                  '、',
-                  '!',
-                  '！',
-                  '？',
-                  '」',
-                  '「',
-                  '』',
-                  '『',
-                  '（',
-                  '）',
-                  '〝',
-                  '〟']
+sentencemarker = ["。", "、", "!", "！", "？", "」", "「", "』", "『", "（", "）", "〝", "〟"]
 
 numbers = "0123456789０１２３４５６７８９"
 
@@ -65,13 +237,14 @@ notkanaset = set(notkana)
 
 notkana_small = notkanaset
 notkana_small.difference_update(set(sentencemarker))
-notkana_small = ''.join(notkana_small)
-notkana_smalltrans = str.maketrans('', '', notkana_small)
+notkana_small = "".join(notkana_small)
+notkana_smalltrans = str.maketrans("", "", notkana_small)
 
-notkanatrans = str.maketrans('', '', notkana)
+notkanatrans = str.maketrans("", "", notkana)
 
-allchars = hiragana + katakana + \
-    "".join(specialchars) + alphastring + numbers + alphawide
+allchars = (
+    hiragana + katakana + "".join(specialchars) + alphastring + numbers + alphawide
+)
 
 allcharset = set(allchars)
 
@@ -101,8 +274,8 @@ def is_in_allchars(word):
 
 
 def clean_lemma(lemma):
-    if '-' in lemma:
-        idx = lemma.find('-')
+    if "-" in lemma:
+        idx = lemma.find("-")
         return lemma[:idx]
     return lemma
 
@@ -116,7 +289,7 @@ def myindex(search_list, value):
 
 
 def getrdictstring(rdict):
-    return ''.join(k*v for k, v in rdict.items())
+    return "".join(k * v for k, v in rdict.items())
 
 
 def contains_lemma(word, known_set, tagger):
@@ -142,8 +315,9 @@ def markup_book_html(bookstr):
 
 
 def remove_furigana_font(bookstr):
-    bookstr = re.sub(r'\<font size="1">(.*?)\<\/font>', '', bookstr)
+    bookstr = re.sub(r'\<font size="1">(.*?)\<\/font>', "", bookstr)
     return bookstr
+
 
 # test with removing furigana first
 
@@ -152,18 +326,18 @@ def markup_book_html_rem_furigana(bookstr):
     bookstr = remove_furigana_font(bookstr)
     for i in notkana:
         if i not in sentencemarker:
-            bookstr = bookstr.replace(i, '')
+            bookstr = bookstr.replace(i, "")
     return bookstr
 
 
 def reduce_new_lines(bookstr):
-    return re.sub(r'\n+', '\n', bookstr)
+    return re.sub(r"\n+", "\n", bookstr)
 
 
 def remove_non_kanji(words):
-    wordlist = ''.join(words)
+    wordlist = "".join(words)
     wordlist = wordlist.translate(alltrans)
-    wordlist = wordlist.replace('\n', '')
+    wordlist = wordlist.replace("\n", "")
     return wordlist
 
 
@@ -180,28 +354,34 @@ def get_unique_token_words(token_words):
 
 def get_unknown_words(uniq_words, known_words, tagger):
     unknown_words = [
-        word for word in uniq_words if myindex(
-            known_words, word) >= 0 or contains_lemma(
-            word,
-            known_words,
-            tagger)]
+        word
+        for word in uniq_words
+        if myindex(known_words, word) >= 0 or contains_lemma(word, known_words, tagger)
+    ]
     return unknown_words
 
 
 def print_freq_lists(token_words, unknown_words, bodir):
     """Only works with Novelmaker currently"""
     jap_freq = Counter(token_words)
-    with open(bodir + "\\" + os.path.basename(bodir) + "_freq.txt",
-              'w', encoding='utf-8') as wr:
+    with open(
+        bodir + "\\" + os.path.basename(bodir) + "_freq.txt", "w", encoding="utf-8"
+    ) as wr:
         for w, f in jap_freq.most_common():
             if w not in allchars:
                 wr.write(f"{w}, {f}\n")
 
-    unknown_jap_freq = [(k, v) for k, v in jap_freq.most_common()
-                        if k in unknown_words and k not in allchars]
+    unknown_jap_freq = [
+        (k, v)
+        for k, v in jap_freq.most_common()
+        if k in unknown_words and k not in allchars
+    ]
 
-    with open(bodir + "\\" + os.path.basename(bodir) + "_unknown_freq.txt",
-              'w', encoding='utf-8') as wr:
+    with open(
+        bodir + "\\" + os.path.basename(bodir) + "_unknown_freq.txt",
+        "w",
+        encoding="utf-8",
+    ) as wr:
         for w, f in unknown_jap_freq:
             if w not in allchars:
                 wr.write(f"{w}, {f}\n")
@@ -210,13 +390,15 @@ def print_freq_lists(token_words, unknown_words, bodir):
 
 def get_freq_lists(token_words, unknown_words):
     jap_freq = Counter(token_words)
-    unknown_jap_freq = [(k, v) for k, v in jap_freq.most_common()
-                        if k in unknown_words and k not in allchars]
-    freq_list = [(w, f)
-                 for w, f in jap_freq.most_common() if w not in allchars]
-    unknown_freq_list = [(w, f)
-                         for w, f in unknown_jap_freq if w not in allchars]
+    unknown_jap_freq = [
+        (k, v)
+        for k, v in jap_freq.most_common()
+        if k in unknown_words and k not in allchars
+    ]
+    freq_list = [(w, f) for w, f in jap_freq.most_common() if w not in allchars]
+    unknown_freq_list = [(w, f) for w, f in unknown_jap_freq if w not in allchars]
     return freq_list, unknown_freq_list
+
 
 # marks the known words
 # if the word is just 1 character long it will be processed as kanjiword
@@ -234,16 +416,12 @@ def mark_known_words_sbl(bookstr, uniq_words, known, tagger, disable=False):
     unknown_words = []
     uniq_words.sort(key=len, reverse=True)
     for i in tqdm(
-            uniq_words,
-            ascii=True,
-            desc="marking known words",
-            ncols=100,
-            disable=disable):
+        uniq_words, ascii=True, desc="marking known words", ncols=100, disable=disable
+    ):
         idx = myindex(known, i)
         if idx >= 0 or contains_lemma(i, known, tagger):
             if len(i) > 1:
-                bookstr = re.sub(
-                    i, "<span class=\"knownword\">" + i + "</span>", bookstr)
+                bookstr = re.sub(i, '<span class="knownword">' + i + "</span>", bookstr)
             else:
                 if idx >= 0:
                     kanjiwords.append(i)
@@ -260,14 +438,15 @@ def mark_known_words_sbl(bookstr, uniq_words, known, tagger, disable=False):
 
 def mark_unknown_words(bookstr, unknown_words, disable=False):
     for i in tqdm(
-            unknown_words,
-            ascii=True,
-            desc="marking unknown words",
-            ncols=100,
-            disable=disable):
-        bookstr = re.sub(i, "<span class=\"knownword\">" + i + "</span>",
-                         bookstr)
+        unknown_words,
+        ascii=True,
+        desc="marking unknown words",
+        ncols=100,
+        disable=disable,
+    ):
+        bookstr = re.sub(i, '<span class="knownword">' + i + "</span>", bookstr)
     return bookstr
+
 
 # kanjiwords isnt really a word
 # i use it to describe words consisting of just 1 kanji
@@ -281,11 +460,8 @@ def mark_unknown_words(bookstr, unknown_words, disable=False):
 
 def mark_kanjiwords(bookstr, kanjiwords, known_words, disable=False):
     for i in tqdm(
-            kanjiwords,
-            ascii=True,
-            desc="marking kanjiwords",
-            ncols=100,
-            disable=disable):
+        kanjiwords, ascii=True, desc="marking kanjiwords", ncols=100, disable=disable
+    ):
         changer = []
         indices = [m.start() for m in re.finditer(i, bookstr)]
         # for idx in indices:
@@ -293,24 +469,30 @@ def mark_kanjiwords(bookstr, kanjiwords, known_words, disable=False):
         #       pass
         #   else:
         #       changer.append(idx)
-        changer = [idx for idx in indices if bookstr[idx:idx + 2]
-                   not in known_words and bookstr[idx - 1:idx + 1] not in known_words]
+        changer = [
+            idx
+            for idx in indices
+            if bookstr[idx : idx + 2] not in known_words
+            and bookstr[idx - 1 : idx + 1] not in known_words
+        ]
         # the list is reversed to ensure that the indices stay the same during the iterative
         # modification
         changer.reverse()
         for idx in changer:
-            bookstr = bookstr[:idx] + "<span class=\"knownkanjiword\">" + \
-                bookstr[idx] + "</span>" + bookstr[idx + 1:]
+            bookstr = (
+                bookstr[:idx]
+                + '<span class="knownkanjiword">'
+                + bookstr[idx]
+                + "</span>"
+                + bookstr[idx + 1 :]
+            )
     return bookstr
 
 
 def mark_lemmawords(bookstr, lemmawords, known_words, disable=False):
     for i in tqdm(
-            lemmawords,
-            ascii=True,
-            desc="marking lemmawords",
-            ncols=100,
-            disable=disable):
+        lemmawords, ascii=True, desc="marking lemmawords", ncols=100, disable=disable
+    ):
         changer = []
         indices = [m.start() for m in re.finditer(i, bookstr)]
         # for idx in indices:
@@ -318,40 +500,45 @@ def mark_lemmawords(bookstr, lemmawords, known_words, disable=False):
         #       pass
         #   else:
         #       changer.append(idx)
-        changer = [idx for idx in indices if bookstr[idx:idx + 2]
-                   not in known_words and bookstr[idx - 1:idx + 1] not in known_words]
+        changer = [
+            idx
+            for idx in indices
+            if bookstr[idx : idx + 2] not in known_words
+            and bookstr[idx - 1 : idx + 1] not in known_words
+        ]
         # the list is reversed to ensure that the indices stay the same during the iterative
         # modification
         changer.reverse()
         for idx in changer:
-            bookstr = bookstr[:idx] + "<span class=\"lemmaword\">" + \
-                bookstr[idx] + "</span>" + bookstr[idx + 1:]
+            bookstr = (
+                bookstr[:idx]
+                + '<span class="lemmaword">'
+                + bookstr[idx]
+                + "</span>"
+                + bookstr[idx + 1 :]
+            )
     return bookstr
 
 
 def mark_known_kanji(bookstr, known_kanji, disable=False):
     for i in tqdm(
-            known_kanji,
-            ascii=True,
-            desc="marking known kanji",
-            ncols=100,
-            disable=disable):
+        known_kanji, ascii=True, desc="marking known kanji", ncols=100, disable=disable
+    ):
         if i in bookstr:
-            bookstr = re.sub(
-                i, "<span class=\"knownkanji\">" + i + "</span>", bookstr)
+            bookstr = re.sub(i, '<span class="knownkanji">' + i + "</span>", bookstr)
     return bookstr
 
 
 def mark_unknown_kanji(bookstr, unknown_kanji, disable=False):
     for i in tqdm(
-            unknown_kanji,
-            ascii=True,
-            desc="marking unknown kanji",
-            ncols=100,
-            disable=disable):
+        unknown_kanji,
+        ascii=True,
+        desc="marking unknown kanji",
+        ncols=100,
+        disable=disable,
+    ):
         if i in bookstr:
-            bookstr = re.sub(
-                i, "<span class=\"unknownkanji\">" + i + "</span>", bookstr)
+            bookstr = re.sub(i, '<span class="unknownkanji">' + i + "</span>", bookstr)
     return bookstr
 
 
