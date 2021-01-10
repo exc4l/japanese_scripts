@@ -269,7 +269,7 @@ def srt_processing(subtitledir, reportdir=None):
             for sen in subs:
                 sentence_tokens = [
                     word.feature.lemma if word.feature.lemma else word.surface
-                    for word in tagger(sen.content)
+                    for word in tagger(kana.markup_book_html(sen.content))
                 ]
                 sentence_tokens = [
                     kana.clean_lemma(token)
@@ -362,7 +362,7 @@ def srt_processing(subtitledir, reportdir=None):
             for sen in subs:
                 sentence_tokens = [
                     word.feature.lemma if word.feature.lemma else word.surface
-                    for word in tagger(sen.content)
+                    for word in tagger(kana.markup_book_html(sen.content))
                 ]
                 sentence_tokens = [
                     kana.clean_lemma(token)
