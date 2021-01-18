@@ -472,10 +472,10 @@ def personal_report(bookdir, subsdir):
         wr.write(counterstr)
 
 
-
 def search_in_subs(bookdir, subsdir, val=None):
     import srt
-    tagger=fugashi.Tagger()
+
+    tagger = fugashi.Tagger()
     with open("$PersonalReport.csv", "r", encoding="utf-8") as file:
         data = file.read().splitlines()
     refdict = {}
@@ -483,6 +483,7 @@ def search_in_subs(bookdir, subsdir, val=None):
         k, _, re = d.split(",", 2)
         refdict[k] = re.strip().replace(", ", ",").replace(".txt", "")
     if val is None:
+        print("Top 15 Words:")
         print("\n".join(data[:15]))
         print("specify a word: ")
         val = input()
@@ -548,9 +549,20 @@ def search_in_subs(bookdir, subsdir, val=None):
     help="the dictionary which contains the sub files",
 )
 @click.option("--pr", is_flag=True, help=("Activates personal report mode"))
-@click.option("--search", is_flag=True, help="search for personal report words in subfiles")
+@click.option(
+    "--search", is_flag=True, help="search for personal report words in subfiles"
+)
 def main(
-    extract_mobi, force_mobi, do_html, bookdir, max_img_height, report, srt, subsdir, pr, search
+    extract_mobi,
+    force_mobi,
+    do_html,
+    bookdir,
+    max_img_height,
+    report,
+    srt,
+    subsdir,
+    pr,
+    search,
 ):
     if srt or pr:
         srt_processing(subsdir)
