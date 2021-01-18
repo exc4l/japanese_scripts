@@ -472,6 +472,50 @@ def personal_report(bookdir, subsdir):
         wr.write(counterstr)
 
 
+
+def search_in_subs(bookdir, subsdir, val=None):
+    import srt
+    tagger=fugashi.Tagger()
+    with open("$PersonalReport.csv", "r", encoding="utf-8") as file:
+        data = file.read().splitlines()
+    refdict = {}
+    for d in data:
+        k, _, re = d.split(",", 2)
+        refdict[k] = re.strip().replace(", ", ",").replace(".txt", "")
+    if val is None:
+        print("\n".join(data[:15]))
+        print("specify a word: ")
+        val = input()
+    if val in refdict:
+        for i, item in enumerate(refdict[val].split(","), 1):
+            print(i, ". " + item, sep="")
+        print("Choose the file")
+        choic = input()
+    else:
+        print("not found in the report")
+    sel = refdict[val].split(",")[int(choic) - 1]
+    with open(f"{subsdir}/{sel}", "r", encoding="utf-8") as file:
+        subtitle = file.read()
+    sub_gen = srt.parse(subtitle)
+    subs = list(sub_gen)
+    for sen in subs:
+        sentence_tokens = [
+            word.feature.lemma if word.feature.lemma else word.surface
+            for word in tagger(kana.markup_book_html(sen.content))
+        ]
+        sentence_tokens = [
+            kana.clean_lemma(token)
+            for token in sentence_tokens
+            if not kana.is_single_kana(token)
+        ]
+        if val in sentence_tokens:
+            print(sen.start, sen.end)
+            print(sen.content)
+    more_choic = input("Do you want to search in another file? ")
+    if more_choic[0].lower() == "y":
+        search_in_subs(bookdir, subsdir, val=val)
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option("--extract-mobi", "-M", is_flag=True, help="extract mobi to html")
 @click.option("--force-mobi", is_flag=True, help="forces the extraction of all mobis")
@@ -504,8 +548,9 @@ def personal_report(bookdir, subsdir):
     help="the dictionary which contains the sub files",
 )
 @click.option("--pr", is_flag=True, help=("Activates personal report mode"))
+@click.option("--search", is_flag=True, help="search for personal report words in subfiles")
 def main(
-    extract_mobi, force_mobi, do_html, bookdir, max_img_height, report, srt, subsdir, pr
+    extract_mobi, force_mobi, do_html, bookdir, max_img_height, report, srt, subsdir, pr, search
 ):
     if srt or pr:
         srt_processing(subsdir)
@@ -526,6 +571,8 @@ def main(
             report_function(booklist)
     if pr:
         personal_report("LNs", subsdir)
+    if search:
+        search_in_subs("LNs", subsdir)
 
 
 if __name__ == "__main__":
