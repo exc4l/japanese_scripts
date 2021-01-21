@@ -85,9 +85,14 @@ def main(no_kanjigrid, user):
         for w in uniq_w:
             w = kana.markup_book_html(w)
             tags = [
-                word.feature.lemma if word.feature.lemma else word.surface for word in tagger(w)
+                word.feature.lemma if word.feature.lemma else word.surface
+                for word in tagger(w)
             ]
-            tags = [kana.clean_lemma(token) for token in tags if not kana.is_single_kana(token)]
+            tags = [
+                kana.clean_lemma(token)
+                for token in tags
+                if not kana.is_single_kana(token)
+            ]
             tags = kana.get_unique_token_words(tags)
             extra.update(tags)
 
@@ -98,7 +103,9 @@ def main(no_kanjigrid, user):
             with open(kw_path, "r", encoding="utf-8") as file:
                 previous_known = file.read().splitlines()
                 previous_known = [
-                    word for word in previous_known if not kana.is_single_kana(word) and word
+                    word
+                    for word in previous_known
+                    if not kana.is_single_kana(word) and word
                 ]
         uniq_w.update(previous_known)
 
@@ -111,7 +118,7 @@ def main(no_kanjigrid, user):
                     # print(sum(1 for _ in file))
                     nx_sup.extend(list(file.read().split("\n")))
 
-                uniq_w.extend(nx_sup)
+                uniq_w.update(nx_sup)
 
     muniq = kana.markup_known_words("\n".join(uniq_w))
     muniq = list(muniq)
