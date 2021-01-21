@@ -7,7 +7,7 @@ from tqdm import tqdm
 from collections import Counter
 import kanjianalyze as kana
 import html_prep as hpre
-
+import srt
 import click
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], show_default=True)
@@ -472,10 +472,49 @@ def personal_report(bookdir, subsdir):
         wr.write(counterstr)
 
 
-def search_in_subs(bookdir, subsdir, val=None):
-    import srt
+def print_console_and_file(output, filehandle):
+    print(output)
+    filehandle.write(output + "\n")
 
+
+def print_matching_sub_lines(subsdir, selection, value, sublogger=None):
     tagger = fugashi.Tagger()
+    if sublogger is None:
+        sublogger = open("sublines.log", "w", encoding="utf-8")
+    if "srt" in selection.lower():
+        with open(f"{subsdir}/{selection}", "r", encoding="utf-8") as file:
+            subtitle = file.read()
+
+        sub_gen = srt.parse(subtitle)
+        subs = list(sub_gen)
+        for sen in subs:
+            sentence_tokens = [
+                word.feature.lemma if word.feature.lemma else word.surface
+                for word in tagger(kana.markup_book_html(sen.content))
+            ]
+            sentence_tokens = [
+                kana.clean_lemma(token)
+                for token in sentence_tokens
+                if not kana.is_single_kana(token)
+            ]
+            if value in sentence_tokens:
+                print_console_and_file(f"{sen.start} {sen.end}", sublogger)
+                print_console_and_file(sen.content, sublogger)
+    else:
+        subsrtfiles = [
+            f"{selection}/{f.name}"
+            for f in os.scandir(f"{subsdir}/{selection}")
+            if f.is_file() and f.name[0] != "$"
+        ]
+        print(subsrtfiles)
+        for srtfile in subsrtfiles:
+            print_console_and_file(srtfile, sublogger)
+            print_matching_sub_lines(
+                subsdir, selection=srtfile, value=value, sublogger=sublogger
+            )
+
+
+def search_in_subs(bookdir, subsdir, val=None):
     with open("$PersonalReport.csv", "r", encoding="utf-8") as file:
         data = file.read().splitlines()
     refdict = {}
@@ -484,7 +523,8 @@ def search_in_subs(bookdir, subsdir, val=None):
         refdict[k] = re.strip().replace(", ", ",").replace(".txt", "")
     if val is None:
         print("Top 15 Words:")
-        print("\n".join(data[:15]))
+        for i, item in enumerate(data[:15], 1):
+            print(i, ". " + item, sep="")
         print("specify a word: ")
         val = input()
     if val in refdict:
@@ -492,29 +532,25 @@ def search_in_subs(bookdir, subsdir, val=None):
             print(i, ". " + item, sep="")
         print("Choose the file")
         choic = input()
+        sel = refdict[val].split(",")[int(choic) - 1]
+    elif val.isnumeric():
+        val = data[int(val) - 1].split(",")[0]
+        for i, item in enumerate(refdict[val].split(","), 1):
+            print(i, ". " + item, sep="")
+        print("Choose the file")
+        choic = input()
+        # sel = refdict[data[val-1].split(",")[0]].split(",")[int(choic) - 1]
+        sel = refdict[val].split(",")[int(choic) - 1]
+        print(sel)
     else:
         print("not found in the report")
-    sel = refdict[val].split(",")[int(choic) - 1]
-    with open(f"{subsdir}/{sel}", "r", encoding="utf-8") as file:
-        subtitle = file.read()
-    sub_gen = srt.parse(subtitle)
-    subs = list(sub_gen)
-    for sen in subs:
-        sentence_tokens = [
-            word.feature.lemma if word.feature.lemma else word.surface
-            for word in tagger(kana.markup_book_html(sen.content))
-        ]
-        sentence_tokens = [
-            kana.clean_lemma(token)
-            for token in sentence_tokens
-            if not kana.is_single_kana(token)
-        ]
-        if val in sentence_tokens:
-            print(sen.start, sen.end)
-            print(sen.content)
+    print(f"{subsdir}/{sel}")
+    print_matching_sub_lines(subsdir, selection=sel, value=val)
     more_choic = input("Do you want to search in another file? ")
+    if more_choic == "":
+        return
     if more_choic[0].lower() == "y":
-        search_in_subs(bookdir, subsdir, val=val)
+        search_in_subs(bookdir, subsdir, val=str(val))
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
