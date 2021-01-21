@@ -50,9 +50,7 @@ def main(no_kanjigrid, user):
             print("Current known words:")
 
     with open(path + "\\anki_cards.txt", "r") as file:
-        data = file.read()
-
-    card_list = data.split("\n")
+        card_list = file.read().splitlines()
 
     words = []
     for cards in card_list:
@@ -76,34 +74,33 @@ def main(no_kanjigrid, user):
             if not kana.is_single_kana(w[field - 1]):
                 words.append(w[field - 1])
 
-    uniq_w = list(set(words))
+    uniq_w = set(words)
 
-    extra = []
     # for a better reprensation of what i actually known
     # it would probably be better to do this right before any processing
     # and not now which just inflates the numbers
+    # 21.01 still unsure about this
     if EXTRA:
+        extra = set()
         for w in uniq_w:
-            tags = [word.feature.lemma for word in tagger(w) if word.feature.lemma]
+            w = kana.markup_book_html(w)
             tags = [
-                kana.clean_lemma(token)
-                for token in tags
-                if not kana.is_single_kana(token)
+                word.feature.lemma if word.feature.lemma else word.surface for word in tagger(w)
             ]
-            for t in tags:
-                if t not in uniq_w:
-                    extra.append(t)
+            tags = [kana.clean_lemma(token) for token in tags if not kana.is_single_kana(token)]
+            tags = kana.get_unique_token_words(tags)
+            extra.update(tags)
 
-    extra = list(set(extra))
-    uniq_w.extend(extra)
+        uniq_w.update(extra)
 
     if not DISREGARD_OLD_KNOWN:
         if os.path.isfile(kw_path):
             with open(kw_path, "r", encoding="utf-8") as file:
-                previous_known = file.read()
-                previous_known = previous_known.split("\n")
-            previous_known = [w for w in previous_known if not kana.is_single_kana(w)]
-            uniq_w.extend(previous_known)
+                previous_known = file.read().splitlines()
+                previous_known = [
+                    word for word in previous_known if not kana.is_single_kana(word) and word
+                ]
+        uniq_w.update(previous_known)
 
     if ADD_NX_SUP:
         nx_sup = []
@@ -116,12 +113,8 @@ def main(no_kanjigrid, user):
 
                 uniq_w.extend(nx_sup)
 
-    uniq_w = list(set(uniq_w))
-    uniq_w = [w for w in uniq_w if w is not None]
-
     muniq = kana.markup_known_words("\n".join(uniq_w))
-    muniq = list(filter(None, muniq))
-    muniq = list(set(muniq))
+    muniq = list(muniq)
     muniq.sort()
 
     uniqK = kana.get_unique_kanji(muniq)
