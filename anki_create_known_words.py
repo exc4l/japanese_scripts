@@ -120,7 +120,7 @@ def main(no_kanjigrid, user):
 
                 uniq_w.update(nx_sup)
 
-    muniq = kana.markup_known_words("\n".join(uniq_w))
+    muniq = {w for w in kana.markup_known_words("\n".join(uniq_w)) if w != ""}
     muniq = list(muniq)
     muniq.sort()
 

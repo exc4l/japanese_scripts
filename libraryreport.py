@@ -419,6 +419,13 @@ def srt_processing(subtitledir, reportdir=None):
 
 
 def personal_report(bookdir, subsdir):
+    # the tokenizer makes a lot of mistakes and to deal with some
+    # im using a .prignore.txt which contains words which are the result of
+    # wrong lemmatization. i.e. sometimes 二郎 results in 次郎 instead of ジロウ
+    # as I don't have to time to properly think of a solution im using this hotfix
+    if os.path.isfile(".prignore.txt"):
+        with open(".prignore.txt", "r", encoding="utf-8") as file:
+            ignoset = set(file.read().splitlines())
     bookset = {
         f.name
         for f in os.scandir(bookdir)
@@ -466,7 +473,7 @@ def personal_report(bookdir, subsdir):
         known_words = set()
     counterstr = ""
     for k, v in total_counter.most_common():
-        if k not in known_words:
+        if k not in known_words and k not in ignoset:
             counterstr += f"{k}, {v}, {reference_dict[k]}\n"
     with open("$PersonalReport.csv", "w", encoding="utf-8") as wr:
         wr.write(counterstr)
