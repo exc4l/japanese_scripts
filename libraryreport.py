@@ -519,6 +519,7 @@ def print_matching_sub_lines(subsdir, selection, value, sublogger=None):
             print_matching_sub_lines(
                 subsdir, selection=srtfile, value=value, sublogger=sublogger
             )
+    return sublogger
 
 
 def search_in_subs(bookdir, subsdir, val=None):
@@ -551,8 +552,10 @@ def search_in_subs(bookdir, subsdir, val=None):
         print(sel)
     else:
         print("not found in the report")
+        return
     print(f"{subsdir}/{sel}")
-    print_matching_sub_lines(subsdir, selection=sel, value=val)
+    sublogger = print_matching_sub_lines(subsdir, selection=sel, value=val)
+    sublogger.close()
     more_choic = input("Do you want to search in another file? ")
     if more_choic == "":
         return
