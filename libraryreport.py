@@ -473,7 +473,7 @@ def personal_report(bookdir, subsdir):
         known_words = set()
     counterstr = ""
     for k, v in total_counter.most_common():
-        if k not in known_words and k not in ignoset:
+        if k not in known_words and k not in ignoset and not kana.is_katakana(k):
             counterstr += f"{k}, {v}, {reference_dict[k]}\n"
     with open("$PersonalReport.csv", "w", encoding="utf-8") as wr:
         wr.write(counterstr)

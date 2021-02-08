@@ -278,6 +278,10 @@ def pattern_replacement(string, pattern, replacements):
     return pattern.sub(lambda match: replacements[match.group(0)], string)
 
 
+def is_katakana(word):
+    wset = set(word)
+    return wset.issubset(katakana)
+
 def is_single_kana(word):
     if word in kanaset:
         return True
