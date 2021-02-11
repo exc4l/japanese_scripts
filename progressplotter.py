@@ -49,7 +49,7 @@ command = [
     "-i",
     "in.ffconcat",
     "-vf",
-    "crop=2496:3430:0:0, format=yuv420p, scale=iw/2:ih/2",
+    "crop=2496:3180:0:0, format=yuv420p, scale=iw/2:ih/2",
     "-c:v",
     "libvpx-vp9",
     "-crf",

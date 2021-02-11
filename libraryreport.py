@@ -342,6 +342,7 @@ def srt_processing(subtitledir, reportdir=None):
 
             add_data = [
                 {
+
                     "Name": os.path.basename(subf),
                     "Number Tokens": sum(rdict.values()),
                     "Total Words": len(rdict),
@@ -426,6 +427,7 @@ def personal_report(bookdir, subsdir):
     if os.path.isfile(".prignore.txt"):
         with open(".prignore.txt", "r", encoding="utf-8") as file:
             ignoset = set(file.read().splitlines())
+        ignoset = {k.split()[0] for k in ignoset}
     bookset = {
         f.name
         for f in os.scandir(bookdir)
