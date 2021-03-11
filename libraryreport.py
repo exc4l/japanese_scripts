@@ -9,6 +9,7 @@ import kanjianalyze as kana
 import html_prep as hpre
 import srt
 import click
+import re
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], show_default=True)
 
@@ -186,6 +187,10 @@ def report_function(booklist):
         reportdf.to_csv(f"{reportdir}/{reportname}", index_label="Index")
 
 
+def remove_names(text):
+    return re.sub(r"\（(.*?)\）", "", text)
+
+
 def srt_processing(subtitledir, reportdir=None):
     import srt
     import pandas as pd
@@ -269,7 +274,7 @@ def srt_processing(subtitledir, reportdir=None):
             for sen in subs:
                 sentence_tokens = [
                     word.feature.lemma if word.feature.lemma else word.surface
-                    for word in tagger(kana.markup_book_html(sen.content))
+                    for word in tagger(kana.markup_book_html(remove_names(sen.content)))
                 ]
                 sentence_tokens = [
                     kana.clean_lemma(token)
@@ -342,7 +347,6 @@ def srt_processing(subtitledir, reportdir=None):
 
             add_data = [
                 {
-
                     "Name": os.path.basename(subf),
                     "Number Tokens": sum(rdict.values()),
                     "Total Words": len(rdict),
@@ -532,8 +536,8 @@ def search_in_subs(bookdir, subsdir, val=None):
         k, _, re = d.split(",", 2)
         refdict[k] = re.strip().replace(", ", ",").replace(".txt", "")
     if val is None:
-        print("Top 15 Words:")
-        for i, item in enumerate(data[:15], 1):
+        print("Top 20 Words:")
+        for i, item in enumerate(data[:20], 1):
             print(i, ". " + item, sep="")
         print("specify a word: ")
         val = input()

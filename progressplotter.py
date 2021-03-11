@@ -18,6 +18,7 @@ fig, ax = plt.subplots(1)
 color = "dodgerblue"
 ax.set_ylabel("Words", color=color)
 ax.tick_params(axis="y", labelcolor=color)
+ax.set_ylim(4000,10000)
 fig.autofmt_xdate()
 fig.set_size_inches(figure_size[0], figure_size[1])
 plt.plot_date(prodf["Date"], prodf["Words"], color=color)
@@ -26,6 +27,7 @@ color = "darkviolet"
 ax2.set_ylabel("Kanji", color=color)
 ax2.plot_date(prodf["Date"], prodf["Kanji"], color=color)
 ax2.tick_params(axis="y", labelcolor=color)
+ax2.set_ylim(1400, 3000)
 fig.tight_layout()
 plt.savefig(
     "Progress.png", dpi=150, facecolor="white", bbox_inches="tight", pad_inches=0.5
@@ -53,7 +55,9 @@ command = [
     "-c:v",
     "libvpx-vp9",
     "-crf",
-    "22",
+    "31",
+    "-b:v",
+    "0",
     "KanjiProgress.webm",
 ]
 
