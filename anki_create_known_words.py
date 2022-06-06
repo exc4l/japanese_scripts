@@ -23,16 +23,16 @@ def main(no_kanjigrid, user):
         import fugashi
 
         tagger = fugashi.Tagger()
-        EXTRA = True
+        EXTRA = False
     except ModuleNotFoundError:
         EXTRA = False
 
     __loc__ = os.path.abspath("")
     __loc__ = os.path.dirname(os.path.realpath(__file__))
-    DISREGARD_OLD_KNOWN = False
+    DISREGARD_OLD_KNOWN = True
     ADD_NX_SUP = False
     CREATE_KANJIGRID = not no_kanjigrid
-    COUNT_NEW_LEECHES = True
+    COUNT_NEW_LEECHES = False
 
     write_to_file_text = ""
 
@@ -57,8 +57,8 @@ def main(no_kanjigrid, user):
         card, field = cards.split(":")
         field = int(field)
         selection = notes.query(
-            f"nmodel == '{card}' and cqueue == 'due' "
-            f"or nmodel == '{card}' and cqueue == 'suspended'"
+            f"nmodel == '{card}' and cqueue == 'due'"
+            # f"or nmodel == '{card}' and cqueue == 'suspended'"
         )
         sellist = selection["nflds"].tolist()
         if COUNT_NEW_LEECHES:
@@ -75,7 +75,6 @@ def main(no_kanjigrid, user):
                 words.append(w[field - 1])
 
     uniq_w = set(words)
-
     # for a better reprensation of what i actually known
     # it would probably be better to do this right before any processing
     # and not now which just inflates the numbers

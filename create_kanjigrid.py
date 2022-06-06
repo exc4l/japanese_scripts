@@ -1,10 +1,11 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageChops
 import os
 import kanjianalyze as kana
 import math
 from collections import Counter
 from datetime import datetime
 import click
+from pathlib import Path
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], show_default=True)
 
@@ -225,7 +226,18 @@ def main(print_unknown_kanji):
 
     if print_unknown_kanji:
         print(unknown_kanji)
+    respath = Path(path)
+    gridlist = list(respath.glob("Kanjigrid*"))
+    gridlist.sort(key=os.path.getctime, reverse=True)
 
+    img1 = Image.open(gridlist[0])
+    img2 = Image.open(gridlist[1])
+    diff = ImageChops.difference(img1, img2)
+    diff.save(__loc__+"/kanjigriddiff.png")
+    img1 = Image.open(gridlist[0])
+    img2 = Image.open(gridlist[-1])
+    diff = ImageChops.difference(img1, img2)
+    diff.save(__loc__+"/kanjigriddiff_first_to_last.png")
 
 if __name__ == "__main__":
     main()
